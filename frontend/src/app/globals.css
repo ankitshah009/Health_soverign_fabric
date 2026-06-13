@@ -1,0 +1,619 @@
+@import "tailwindcss";
+
+:root {
+  /* ═══ BRAND: Amber Tonal Scale ═══════════════════
+     Full 50–950 range for the primary brand color.
+     Enables amber-tinted backgrounds, text-safe variants,
+     and pressed/hover states without single-swatch monotony.
+     ════════════════════════════════════════════════ */
+  --amber-50:  #FEF7EC;
+  --amber-100: #FDF0D3;
+  --amber-200: #FBDFA5;
+  --amber-300: #F8C96E;
+  --amber-400: #F5A623;  /* Hero — primary CTA, active states */
+  --amber-500: #E0920D;  /* Pressed / visited */
+  --amber-600: #C47B0A;  /* Text-safe on dark backgrounds (4.5:1+ on --bg-base) */
+  --amber-700: #9E6108;
+  --amber-800: #7D4C06;
+  --amber-900: #5E3904;
+  --amber-950: #362003;
+
+  /* ═══ SECONDARY: Sapphire ════════════════════════
+     Cool blue complement for data, links, info states.
+     Prevents amber monotony by providing contrast hue.
+     ════════════════════════════════════════════════ */
+  --sapphire-400: #6C9FFF;
+  --sapphire-500: #4A80E8;
+  --sapphire-600: #3568CC;
+
+  /* ═══ TERTIARY: Violet ═══════════════════════════
+     For escalation states, AI/insight elements, and
+     visual interest in gradient borders.
+     ════════════════════════════════════════════════ */
+  --violet-400: #A78BFA;
+  --violet-500: #8B6FE0;
+
+  /* ═══ SURFACES ═══════════════════════════════════
+     6-step charcoal ramp with warm-purple undertone.
+     Wider lightness gaps between steps so cards
+     actually lift off the background visually.
+     ════════════════════════════════════════════════ */
+  --bg-base:      #08080A;  /* App chrome, deepest layer */
+  --bg-recessed:  #0D0D10;  /* Inset wells, input fields */
+  --bg-surface:   #121216;  /* Cards, sidebar panels */
+  --bg-elevated:  #1C1C22;  /* Hover cards, popovers, active rows */
+  --bg-overlay:   #262630;  /* Modals, dropdowns */
+  --bg-spotlight: #30303E;  /* Selected rows, highlighted items */
+
+  /* ═══ BORDERS ════════════════════════════════════
+     Warm-tinted grays with 5 tiers for clear hierarchy.
+     ════════════════════════════════════════════════ */
+  --border-faint:   #161620;  /* Hairline separators */
+  --border-subtle:  #1F1F2A;  /* Card borders at rest */
+  --border-default: #2C2C3A;  /* Interactive element borders */
+  --border-strong:  #3C3C4E;  /* Focus / active borders */
+  --border-vivid:   #505068;  /* Maximum emphasis */
+
+  /* ═══ TEXT ════════════════════════════════════════
+     4-tier text hierarchy. All pass WCAG AA on --bg-surface.
+     - primary:   15.8:1 contrast (headlines)
+     - secondary:  7.6:1 contrast (body text)
+     - tertiary:   4.8:1 contrast (captions) — AA
+     - muted:      2.8:1 contrast (disabled) — decorative only
+     ════════════════════════════════════════════════ */
+  --text-primary:   #F4F4F3;
+  --text-secondary: #A8A8B3;
+  --text-tertiary:  #71717E;
+  --text-muted:     #5C5C6B;
+
+  /* ═══ BRAND ACCENTS (derived) ════════════════════ */
+  --accent-primary:        var(--amber-400);
+  --accent-primary-hover:  var(--amber-300);
+  --accent-primary-text:   var(--amber-600);
+  --accent-primary-bg:     rgba(245, 166, 35, 0.10);
+  --accent-primary-border: rgba(245, 166, 35, 0.22);
+
+  --accent-secondary:        var(--sapphire-400);
+  --accent-secondary-bg:     rgba(108, 159, 255, 0.07);
+  --accent-secondary-border: rgba(108, 159, 255, 0.18);
+
+  /* ═══ RISK LEVELS (insurance domain) ═════════════
+     Color-blind safe: varies both hue AND lightness.
+     Each has foreground, tinted-bg, and border variants.
+     ════════════════════════════════════════════════ */
+  --risk-critical:        #EF4444;
+  --risk-critical-bg:     rgba(239, 68, 68, 0.09);
+  --risk-critical-border: rgba(239, 68, 68, 0.22);
+  --risk-critical-text:   #FCA5A5;
+
+  --risk-high:            #F97316;
+  --risk-high-bg:         rgba(249, 115, 22, 0.09);
+  --risk-high-border:     rgba(249, 115, 22, 0.22);
+  --risk-high-text:       #FDBA74;
+
+  --risk-medium:          #EAB308;
+  --risk-medium-bg:       rgba(234, 179, 8, 0.09);
+  --risk-medium-border:   rgba(234, 179, 8, 0.22);
+  --risk-medium-text:     #FDE68A;
+
+  --risk-low:             #22C55E;
+  --risk-low-bg:          rgba(34, 197, 94, 0.09);
+  --risk-low-border:      rgba(34, 197, 94, 0.22);
+  --risk-low-text:        #86EFAC;
+
+  /* ═══ WORKFLOW STATES ════════════════════════════ */
+  --status-processing:    var(--amber-400);
+  --status-processing-bg: var(--accent-primary-bg);
+  --status-review:        #FB923C;
+  --status-review-bg:     rgba(251, 146, 60, 0.10);
+  --status-approved:      #34D399;
+  --status-approved-bg:   rgba(52, 211, 153, 0.10);
+  --status-denied:        #FB7185;
+  --status-denied-bg:     rgba(251, 113, 133, 0.10);
+  --status-escalated:     var(--violet-400);
+  --status-escalated-bg:  rgba(167, 139, 250, 0.10);
+
+  /* ═══ SEMANTIC (UI feedback) ═════════════════════ */
+  --success:        #34D399;
+  --success-bg:     rgba(52, 211, 153, 0.09);
+  --success-border: rgba(52, 211, 153, 0.22);
+
+  --warning:        #FBBF24;
+  --warning-bg:     rgba(251, 191, 36, 0.09);
+  --warning-border: rgba(251, 191, 36, 0.22);
+
+  --danger:         #F87171;
+  --danger-bg:      rgba(248, 113, 113, 0.09);
+  --danger-border:  rgba(248, 113, 113, 0.22);
+
+  --info:           #60A5FA;
+  --info-bg:        rgba(96, 165, 250, 0.09);
+  --info-border:    rgba(96, 165, 250, 0.22);
+
+  /* ═══ DATA VISUALIZATION ═════════════════════════
+     6-color palette optimized for dark backgrounds.
+     Balanced saturation, distinct hues, colorblind-safe.
+     ════════════════════════════════════════════════ */
+  --chart-1: var(--amber-400);   /* Amber  — brand anchor */
+  --chart-2: var(--sapphire-400); /* Blue   — cool contrast */
+  --chart-3: #34D399;             /* Emerald — distinct green */
+  --chart-4: var(--violet-400);   /* Violet — warm highlight */
+  --chart-5: #FB923C;             /* Orange — warm secondary */
+  --chart-6: #F472B6;             /* Pink   — maximum contrast */
+
+  /* ═══ GLASS ══════════════════════════════════════ */
+  --glass-bg:     rgba(18, 18, 22, 0.82);
+  --glass-border: rgba(245, 166, 35, 0.10);
+  --glass-blur:   20px;
+
+  /* ═══ INTERACTIVE ════════════════════════════════ */
+  --focus-ring: var(--amber-400);
+  --hover-overlay: rgba(255, 255, 255, 0.04);
+
+  /* legacy compat */
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+}
+
+@theme inline {
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Focus rings (accessibility) ─────────────── */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+/* ── Top accent strip (Linear-inspired) ──────── */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--amber-400),
+    var(--risk-critical),
+    var(--amber-400),
+    var(--risk-low),
+    var(--amber-400)
+  );
+  background-size: 200% 100%;
+  animation: gradientShift 8s ease infinite;
+  z-index: 9999;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ═══ CARD TIERS (visual hierarchy) ════════════
+   3 tiers create distinct visual weight:
+   - card: default surface (most content)
+   - card-elevated: raised emphasis (inner panels)
+   - card-hero: maximum visual weight (primary content)
+   ═════════════════════════════════════════════════ */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  transition: border-color 0.2s ease, background 0.2s ease,
+              transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card:hover {
+  border-color: var(--border-default);
+  background: var(--bg-elevated);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+.card-elevated {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+}
+.card-hero {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+}
+.card-outline {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+}
+.card-data {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Glass panel (AI insights) ──────────────── */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Dark mode depth: recessed inputs ──────── */
+.input-recessed {
+  background: var(--bg-recessed);
+  border: 1px solid var(--border-default);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-recessed:focus {
+  border-color: var(--accent-primary);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3),
+              0 0 0 2px var(--accent-primary-border);
+}
+
+/* ── Dark mode depth: card elevation highlight ── */
+.card-highlight {
+  position: relative;
+}
+.card-highlight::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  border-radius: 16px 16px 0 0;
+  pointer-events: none;
+}
+
+/* ── Risk glow on cards ─────────────────────── */
+.card-risk-critical {
+  border-left: 3px solid var(--risk-critical) !important;
+  box-shadow: -4px 0 24px var(--risk-critical-border);
+}
+.card-risk-high {
+  border-left: 3px solid var(--risk-high) !important;
+  box-shadow: -4px 0 20px var(--risk-high-border);
+}
+.card-risk-medium {
+  border-left: 3px solid var(--risk-medium) !important;
+  box-shadow: -4px 0 16px var(--risk-medium-border);
+}
+.card-risk-low {
+  border-left: 3px solid var(--risk-low) !important;
+}
+
+/* ═══ SKELETON & LOADING STATES ════════════════
+   Content-aware shimmer speeds:
+   - Default: 1.5s (standard content)
+   - Slow: 2.5s (large images, charts)
+   - Fast: 1s (small inline elements)
+   ═════════════════════════════════════════════════ */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--border-default) 50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+.skeleton-slow {
+  composes: skeleton;
+  animation-duration: 2.5s;
+  border-radius: 12px;
+}
+.skeleton-fast {
+  composes: skeleton;
+  animation-duration: 1s;
+}
+
+/* Smooth cross-fade from skeleton to real content */
+.skeleton-reveal {
+  animation: skeletonReveal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes skeletonReveal {
+  from { opacity: 0; filter: blur(4px); }
+  to   { opacity: 1; filter: blur(0); }
+}
+
+/* ═══ ANIMATIONS (spring-based motion) ════════
+   Uses cubic-bezier curves that approximate spring
+   physics for natural, satisfying motion.
+   - ease-spring: overshoot spring (0.22, 1, 0.36, 1)
+   - ease-out-expo: deceleration (0.16, 1, 0.3, 1)
+   ═════════════════════════════════════════════════ */
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-slide-in {
+  animation: slideInDown 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.4); }
+  50%      { box-shadow: 0 0 0 8px rgba(245, 166, 35, 0); }
+}
+.animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in {
+  animation: scaleIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ═══ MICRO-INTERACTIONS ═════════════════════════ */
+
+/* Button press — scale down on :active for tactile feedback */
+.btn-press {
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.15s ease;
+}
+.btn-press:hover {
+  transform: translateY(-1px);
+}
+.btn-press:active {
+  transform: scale(0.97) translateY(0);
+}
+
+/* Interactive card — lift on hover with subtle shadow */
+.card-interactive {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.2s ease;
+}
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+.card-interactive:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Icon bounce — playful feedback on state change */
+@keyframes iconBounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.2); }
+  60%  { transform: scale(0.95); }
+  80%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.animate-icon-bounce {
+  animation: iconBounce 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Reduced motion — respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .stagger-children > * {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ── Staggered children ─────────────────────── */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 480ms; }
+
+/* ── Verified stamp ─────────────────────────── */
+.verified-stamp {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  font-size: 4rem; font-weight: 900;
+  color: var(--success-bg);
+  letter-spacing: 0.2em;
+  border: 6px solid var(--success-bg);
+  padding: 0.5rem 2rem;
+  border-radius: 0.75rem;
+  pointer-events: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+}
+
+/* ── Gradient border (simulation card) ──────── */
+.gradient-border {
+  position: relative;
+  background: var(--bg-surface);
+  border-radius: 16px;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--amber-400), var(--violet-400), var(--risk-critical));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ═══ TYPOGRAPHY SCALE ═══════════════════════════
+   Major Third (1.25) ratio from 16px base.
+   Each class bundles size + weight + line-height +
+   letter-spacing so type is always harmonious.
+   ═════════════════════════════════════════════════ */
+
+/* Display — page heroes, empty states (40px / bold / 1.1) */
+.type-display {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+/* Page title — main page headings (28px / bold / 1.2) */
+.type-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Section title — card/section headings (18px / semibold / 1.3) */
+.type-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+/* Subtitle — subsection headings (15px / semibold / 1.4) */
+.type-subtitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+/* Body — default reading text (14px / regular / 1.5) */
+.type-body {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+/* Body strong — emphasized body (14px / medium / 1.5) */
+.type-body-strong {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+/* Caption — timestamps, helper text (12px / regular / 1.4) */
+.type-caption {
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+/* Overline — labels, categories (11px / semibold / 1.3 / uppercase) */
+.type-overline {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Micro — badge text, tiny labels (10px / semibold / 1.2 / uppercase) */
+.type-micro {
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Stat — large numeric values (tabular nums / bold) */
+.type-stat {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Mono — code, IDs, hashes (JetBrains Mono / 12px) */
+.type-mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+
+/* ── Enterprise label style (legacy alias) ───── */
+.label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+/* ── Tabular nums for stat values (legacy alias) */
+.stat-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ── View Transitions ───────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+}

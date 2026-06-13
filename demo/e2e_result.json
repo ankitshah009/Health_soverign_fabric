@@ -1,0 +1,198 @@
+{
+  "captured_at": "2026-06-13T14:01:43-0700",
+  "base_url": "http://localhost:8000",
+  "image": "/Users/ankitparagshah/GitHub/Health_soverign_fabric/demo/sample_er_bill.png",
+  "submit_fields": {
+    "claimant_name": "Demo Patient",
+    "incident_description": "I got a $4,200 ER bill for a sprained ankle and my insurance denied it. The hospital itemized statement looks like it charged me for the same ER visit twice. Please review it and find anything I was overcharged for.",
+    "policy_number": "BCBS-PPO-4471-2026"
+  },
+  "claim_id": "CLM-8beb0635",
+  "final_status": "blocked",
+  "claim": {
+    "id": "CLM-8beb0635",
+    "status": "blocked",
+    "claimant_name": "Demo Patient",
+    "incident_description": "I got a $4,200 ER bill for a sprained ankle and my insurance denied it. The hospital itemized statement looks like it charged me for the same ER visit twice. Please review it and find anything I was overcharged for.",
+    "policy_number": "BCBS-PPO-4471-2026",
+    "file_path": "/Users/ankitparagshah/GitHub/Health_soverign_fabric/backend/uploads/CLM-8beb0635.png",
+    "file_type": "image/png",
+    "created_at": "2026-06-13T21:00:57.451645+00:00",
+    "extracted_data": {
+      "damage_type": "itemized_bill",
+      "estimated_cost": 4200.0,
+      "vehicle_info": "",
+      "incident_details": "Itemized hospital bill from St. Meridian Regional Medical Center for ER visit on 06/02/2026 for right ankle sprain. Five line items total $4,200 billed; insurance denied claim (Self-Pay) so patient owes full $4,200.",
+      "document_type": "itemized_bill",
+      "key_findings": [
+        "99285 \u2014 ER VISIT LEVEL 5 \u2014 HIGH COMPLEXITY \u2014 $1,800.00 (allowed $0.00)",
+        "99285 \u2014 ER VISIT LEVEL 5 \u2014 HIGH COMPLEXITY \u2014 $1,800.00 (allowed $0.00)",
+        "J7030 \u2014 IV INFUSION, NORMAL SALINE 1000 ML \u2014 $450.00 (allowed $0.00)",
+        "73610 \u2014 X-RAY EXAM OF ANKLE, 3 VIEWS \u2014 $95.00 (allowed $0.00)",
+        "A4565 \u2014 SUPPLIES \u2014 IMMOBILIZER / ANKLE SPLINT \u2014 $55.00 (allowed $0.00)",
+        "Patient responsibility: $4,200.00",
+        "POSSIBLE ALTERED/SYNTHETIC DOCUMENT: Future service/statement dates in 2026",
+        "POSSIBLE ALTERED/SYNTHETIC DOCUMENT: Duplicate identical 99285 charges on same date",
+        "POSSIBLE ALTERED/SYNTHETIC DOCUMENT: 'Demo Patient' name indicates synthetic or test document"
+      ]
+    },
+    "fraud_score": 100.0,
+    "fraud_signals": [
+      {
+        "signal_name": "duplicate_charge",
+        "description": "CPT 99285 (ER VISIT LEVEL 5) billed twice at $1,800.00 each on the same date for the identical ER visit. Overcharge of $1,800.00 to patient. Fair-price benchmark: single instance of 99285 typically allowed at $350\u2013$550 (Medicare/commercial rates).",
+        "severity": "high",
+        "confidence": 1.0
+      },
+      {
+        "signal_name": "upcoding",
+        "description": "CPT 99285 (high-complexity ER visit) used for simple right ankle sprain instead of appropriate lower code such as 99283. One instance overcharge of ~$1,200.00 (after removing duplicate). Fair-price benchmark: 99283 typically allowed at $150\u2013$250.",
+        "severity": "high",
+        "confidence": 0.85
+      },
+      {
+        "signal_name": "price_above_fair_market",
+        "description": "J7030 (IV normal saline) billed at $450.00. Overcharge of ~$350.00. Fair-price benchmark: $80\u2013$120 allowed amount.",
+        "severity": "medium",
+        "confidence": 0.8
+      },
+      {
+        "signal_name": "yutori_unverified_claimant_history",
+        "description": "Unable to verify claimant_history 'Demo Patient' via web research. Verification pending.",
+        "severity": "low",
+        "confidence": 0.4
+      },
+      {
+        "signal_name": "yutori_unverified_vehicle_property",
+        "description": "Unable to verify vehicle_property 'itemized_bill' via web research. Verification pending.",
+        "severity": "low",
+        "confidence": 0.4
+      },
+      {
+        "signal_name": "yutori_unverified_incident_corroboration",
+        "description": "Unable to verify incident_corroboration 'I got a $4,200 ER bill for a sprained ankle and my insurance denied it. The hospital itemized statem' via web research. Verification pending.",
+        "severity": "low",
+        "confidence": 0.4
+      },
+      {
+        "signal_name": "yutori_unverified_repair_provider",
+        "description": "Unable to verify repair_provider 'itemized_bill' via web research. Verification pending.",
+        "severity": "low",
+        "confidence": 0.4
+      },
+      {
+        "signal_name": "yutori_unverified_financial_stress",
+        "description": "Unable to verify financial_stress 'Demo Patient' via web research. Verification pending.",
+        "severity": "low",
+        "confidence": 0.4
+      }
+    ],
+    "risk_level": "critical",
+    "coverage_result": {
+      "policy_number": "BCBS-PPO-4471-2026",
+      "coverage_type": "general",
+      "coverage_limit": 25000.0,
+      "deductible": 500.0,
+      "covered": false,
+      "explanation": "The damage type 'itemized_bill' is not covered under policy BCBS-PPO-4471-2026 (general). Covered damage types: vehicle collision, fire damage, water damage, theft."
+    },
+    "payout_recommendation": null,
+    "simulation_result": null,
+    "risk_assessment": {
+      "action_risk_level": "critical",
+      "identity_confidence": 0.167,
+      "document_authenticity_confidence": 0.1,
+      "fraud_concern_level": 1.0,
+      "approval_threshold": 1.0,
+      "recommended_action": "block",
+      "fraud_score": 100.0,
+      "monetary_value": 0.0,
+      "money_movement": true,
+      "reasoning": "Fraud score (100/100) exceeds critical threshold (70). Action blocked pending investigation. This action involves monetary disbursement of $0.00. Fraud score (100) with money movement requires human review."
+    },
+    "decision": null,
+    "decision_by": null,
+    "decision_at": null,
+    "receipt": null
+  },
+  "evidence": {
+    "claim_id": "CLM-8beb0635",
+    "status": "blocked",
+    "claimant_name": "Demo Patient",
+    "incident_description": "I got a $4,200 ER bill for a sprained ankle and my insurance denied it. The hospital itemized statement looks like it charged me for the same ER visit twice. Please review it and find anything I was overcharged for.",
+    "policy_number": "BCBS-PPO-4471-2026",
+    "file_type": "image/png",
+    "created_at": "2026-06-13T21:00:57.451645+00:00",
+    "extracted_data": {
+      "damage_type": "itemized_bill",
+      "estimated_cost": 4200.0,
+      "vehicle_info": "",
+      "incident_details": "Itemized hospital bill from St. Meridian Regional Medical Center for ER visit on 06/02/2026 for right ankle sprain. Five line items total $4,200 billed; insurance denied claim (Self-Pay) so patient owes full $4,200.",
+      "document_type": "itemized_bill",
+      "key_findings": [
+        "99285 \u2014 ER VISIT LEVEL 5 \u2014 HIGH COMPLEXITY \u2014 $1,800.00 (allowed $0.00)",
+        "99285 \u2014 ER VISIT LEVEL 5 \u2014 HIGH COMPLEXITY \u2014 $1,800.00 (allowed $0.00)",
+        "J7030 \u2014 IV INFUSION, NORMAL SALINE 1000 ML \u2014 $450.00 (allowed $0.00)",
+        "73610 \u2014 X-RAY EXAM OF ANKLE, 3 VIEWS \u2014 $95.00 (allowed $0.00)",
+        "A4565 \u2014 SUPPLIES \u2014 IMMOBILIZER / ANKLE SPLINT \u2014 $55.00 (allowed $0.00)",
+        "Patient responsibility: $4,200.00",
+        "POSSIBLE ALTERED/SYNTHETIC DOCUMENT: Future service/statement dates in 2026",
+        "POSSIBLE ALTERED/SYNTHETIC DOCUMENT: Duplicate identical 99285 charges on same date",
+        "POSSIBLE ALTERED/SYNTHETIC DOCUMENT: 'Demo Patient' name indicates synthetic or test document"
+      ]
+    },
+    "fraud_assessment": {
+      "overall_score": 100.0,
+      "risk_level": "critical",
+      "fraud_concern_level": 1.0,
+      "identity_confidence": 0.167,
+      "document_authenticity_confidence": 0.1
+    },
+    "coverage_result": {
+      "policy_number": "BCBS-PPO-4471-2026",
+      "coverage_type": "general",
+      "coverage_limit": 25000.0,
+      "deductible": 500.0,
+      "covered": false,
+      "explanation": "The damage type 'itemized_bill' is not covered under policy BCBS-PPO-4471-2026 (general). Covered damage types: vehicle collision, fire damage, water damage, theft."
+    },
+    "payout_recommendation": null,
+    "simulation_result": null,
+    "risk_assessment": {
+      "action_risk_level": "critical",
+      "identity_confidence": 0.167,
+      "document_authenticity_confidence": 0.1,
+      "fraud_concern_level": 1.0,
+      "approval_threshold": 1.0,
+      "recommended_action": "block",
+      "fraud_score": 100.0,
+      "monetary_value": 0.0,
+      "money_movement": true,
+      "reasoning": "Fraud score (100/100) exceeds critical threshold (70). Action blocked pending investigation. This action involves monetary disbursement of $0.00. Fraud score (100) with money movement requires human review."
+    },
+    "decision": null,
+    "decision_by": null,
+    "decision_at": null,
+    "receipt": null,
+    "short_circuited": true
+  },
+  "receipt": {
+    "_http_status": 404,
+    "_note": "receipt not available"
+  },
+  "audit": [
+    {
+      "id": 1,
+      "claim_id": "CLM-8beb0635",
+      "action": "claim_submitted",
+      "actor": "Demo Patient",
+      "details": {
+        "file_name": "sample_er_bill.png",
+        "file_type": "image/png",
+        "file_size": 147306,
+        "policy_number": "BCBS-PPO-4471-2026"
+      },
+      "timestamp": "2026-06-13T21:00:57.460961+00:00"
+    }
+  ]
+}

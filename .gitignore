@@ -1,0 +1,28 @@
+# Env / secrets (NEVER commit the live xAI key)
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.db
+
+# Node / Next
+node_modules/
+.next/
+out/
+
+# Uploads / runtime
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# OS
+.DS_Store
+
+# Test artifacts
+.playwright-mcp/
+/sovereign-dashboard.png
+/frontend.log
