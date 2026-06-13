@@ -27,7 +27,10 @@ export default function ClaimCard({ claim }: ClaimCardProps) {
   const amount = claim.payout_recommendation?.recommended_amount;
 
   return (
-    <Link href={`/claims/${claim.id}`}>
+    <Link
+      href={`/claims/${claim.id}`}
+      aria-label={`View case for ${claim.claimant_name}${fraudScore !== null ? `, risk score ${Math.round(fraudScore)}` : ""}`}
+    >
       <div
         className={cn(
           "card card-interactive p-5 cursor-pointer group",

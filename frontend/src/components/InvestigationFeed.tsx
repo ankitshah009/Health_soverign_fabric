@@ -272,7 +272,8 @@ export default function InvestigationFeed({
               setError(null);
               connectSSE();
             }}
-            className="text-xs underline"
+            aria-label="Retry investigation feed connection"
+            className="text-xs underline px-2 py-1 min-h-[44px] min-w-[44px] cursor-pointer"
             style={{ color: "var(--risk-critical)" }}
           >
             Retry

@@ -177,6 +177,23 @@ body {
   border-radius: 4px;
 }
 
+/* Reusable focus-ring utility — apply to interactive elements
+   that suppress the default outline with a custom treatment */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Minimum 44×44px touch target for icon-only buttons */
+.btn-touch {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── Scrollbar ──────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -411,13 +428,20 @@ body::before {
 
 /* Interactive card — lift on hover with subtle shadow */
 .card-interactive {
+  cursor: pointer;
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
               box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 0.2s ease;
+              border-color 0.18s ease,
+              background 0.18s ease;
 }
 .card-interactive:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  border-color: var(--border-default);
+}
+.card-interactive:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 .card-interactive:active {
   transform: translateY(0);
@@ -446,6 +470,16 @@ body::before {
   .stagger-children > * {
     animation: none !important;
     opacity: 1 !important;
+  }
+  /* Freeze the top accent bar — decorative infinite animation */
+  body::before {
+    animation: none !important;
+    background-position: 0% 50% !important;
+  }
+  /* Freeze voice pulse ring */
+  .animate-pulse-glow {
+    animation: none !important;
+    box-shadow: none !important;
   }
 }
 

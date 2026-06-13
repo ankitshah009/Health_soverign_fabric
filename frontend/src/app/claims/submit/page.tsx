@@ -63,7 +63,7 @@ export default function SubmitClaimPage() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} aria-label="Submit a new medical billing case" className="space-y-6">
         {/* File upload */}
         <div>
           <label

@@ -408,12 +408,15 @@ export default function VerifyPage() {
             className="rounded-2xl p-6"
             style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}
           >
-            <label className="label block mb-2">Receipt JSON</label>
+            <label htmlFor="receipt-json" className="label block mb-2">Receipt JSON</label>
             <textarea
+              id="receipt-json"
               value={manualJson}
               onChange={(e) => setManualJson(e.target.value)}
               rows={8}
               placeholder='{"receipt_id": "...", "signature_hash": "...", ...}'
+              aria-describedby={manualError ? "receipt-json-error" : undefined}
+              aria-invalid={!!manualError}
               className="w-full rounded-lg px-3 py-2.5 text-xs font-mono resize-y focus:outline-none transition-colors"
               style={{
                 background: "var(--bg-elevated)",
@@ -423,7 +426,7 @@ export default function VerifyPage() {
               }}
             />
             {manualError && (
-              <p className="text-xs mt-1.5" style={{ color: "var(--risk-critical)" }}>{manualError}</p>
+              <p id="receipt-json-error" className="text-xs mt-1.5" role="alert" style={{ color: "var(--risk-critical)" }}>{manualError}</p>
             )}
             <button
               onClick={handleManualSubmit}
@@ -469,23 +472,37 @@ export default function VerifyPage() {
         {/* Big verdict */}
         <div
           className="rounded-2xl p-8 text-center"
+          role="status"
+          aria-live="polite"
+          aria-label={isValid ? "Receipt signature is valid" : isError ? "Verification error" : "Receipt signature is invalid"}
           style={{
             background: statusBg,
             border: `2px solid ${statusBorder}`,
-            boxShadow: `0 0 40px ${statusBorder}`,
+            boxShadow: `0 0 48px ${statusBorder}40, 0 4px 24px rgba(0,0,0,0.3)`,
           }}
         >
-          <StatusIcon className="w-14 h-14 mx-auto mb-4" style={{ color: statusColor }} />
-          <div className="type-display tracking-widest mb-2" style={{ color: statusColor }}>
+          <StatusIcon className="w-16 h-16 mx-auto mb-5" style={{ color: statusColor }} aria-hidden="true" />
+          <div
+            className="type-display tracking-widest mb-3 font-black"
+            style={{ color: statusColor, fontSize: "2rem", letterSpacing: "0.12em" }}
+          >
             {isValid ? "✓ VALID" : isError ? "✗ ERROR" : "✗ INVALID"}
           </div>
+          {isValid && (
+            <p
+              className="text-xs font-semibold mb-3 tracking-widest uppercase"
+              style={{ color: statusColor, opacity: 0.75 }}
+            >
+              Cryptographic signature verified — Ed25519
+            </p>
+          )}
           <p className="text-sm" style={{ color: isValid ? "var(--risk-low-text)" : "var(--risk-critical-text)" }}>
             {isError
               ? errorMsg
               : verifyResult?.message ?? (isValid ? "Signature verified successfully." : "Signature verification failed.")}
           </p>
           {verifyResult?.verified_at && (
-            <p className="text-xs mt-2 font-mono" style={{ color: "var(--text-muted)" }}>
+            <p className="text-xs mt-3 font-mono" style={{ color: "var(--text-muted)" }}>
               Verified at: {formatDate(verifyResult.verified_at)}
             </p>
           )}
@@ -556,7 +573,8 @@ export default function VerifyPage() {
                   </div>
                   <button
                     onClick={() => handleCopy(receipt.signature_hash)}
-                    className="flex-shrink-0 p-2 rounded-lg transition-all"
+                    aria-label={copied ? "Signature hash copied to clipboard" : "Copy signature hash to clipboard"}
+                    className="flex-shrink-0 p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
                     style={{
                       background: copied ? "var(--risk-low-bg)" : "var(--bg-overlay)",
                       border: `1px solid ${copied ? "var(--risk-low-border)" : "var(--border-default)"}`,
@@ -564,7 +582,7 @@ export default function VerifyPage() {
                     }}
                     title="Copy hash"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
                   </button>
                 </div>
               </div>

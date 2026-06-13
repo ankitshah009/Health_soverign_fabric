@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, MailPlus } from "lucide-react";
 import { SOVEREIGN_OPEN_VOICE_EVENT } from "./ChatFab";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -56,13 +56,14 @@ export default function DemoTrigger() {
       ? "Opening Sovereign…"
       : state === "error"
       ? "Failed — retry"
-      : "📨 Simulate: new bill arrived";
+      : "Simulate: new bill arrived";
 
   return (
     <div className="relative">
       <button
         onClick={handleClick}
         disabled={state === "uploading" || state === "done"}
+        aria-label="Demo: simulate a new bill arriving and open Sovereign Voice Advocate"
         title="Demo: upload a sample medical bill and open Sovereign Voice Advocate"
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all btn-press"
         style={{
@@ -90,9 +91,10 @@ export default function DemoTrigger() {
           whiteSpace: "nowrap",
         }}
       >
-        {state === "uploading" && <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" />}
-        {state === "done" && <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />}
-        {state === "error" && <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />}
+        {state === "uploading" && <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" aria-hidden="true" />}
+        {state === "done" && <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
+        {state === "error" && <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
+        {state === "idle" && <MailPlus className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />}
         <span>{label}</span>
       </button>
 

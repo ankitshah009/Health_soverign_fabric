@@ -66,7 +66,10 @@ export default function Sidebar() {
       {/* Mobile hamburger */}
       <button
         data-testid="sidebar-mobile-toggle"
-        className="fixed top-4 left-4 z-[60] md:hidden w-10 h-10 rounded-lg flex items-center justify-center"
+        aria-label={isMobileOpen ? "Close navigation menu" : "Open navigation menu"}
+        aria-expanded={isMobileOpen}
+        aria-controls="sidebar"
+        className="fixed top-4 left-4 z-[60] md:hidden w-11 h-11 rounded-lg flex items-center justify-center"
         style={{
           background: "var(--bg-surface)",
           border: "1px solid var(--border-subtle)",
@@ -74,7 +77,7 @@ export default function Sidebar() {
         }}
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
-        {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+        {isMobileOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
       </button>
 
       {/* Mobile overlay */}
@@ -88,7 +91,9 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside
+        id="sidebar"
         data-testid="sidebar"
+        aria-label="Main navigation"
         className={`fixed left-0 top-0 h-screen flex flex-col z-50 transition-all duration-300 ease-out
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
         style={{
@@ -149,6 +154,8 @@ export default function Sidebar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMobileOpen(false)}
+                aria-label={item.label}
+                aria-current={isActive ? "page" : undefined}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative"
                 style={{
                   color: isActive ? "var(--accent-primary)" : "var(--text-secondary)",
@@ -163,6 +170,7 @@ export default function Sidebar() {
                 )}
                 <Icon
                   size={20}
+                  aria-hidden="true"
                   className="flex-shrink-0 transition-colors"
                   style={{
                     color: isActive ? "var(--accent-primary)" : "var(--text-muted)",
@@ -192,13 +200,15 @@ export default function Sidebar() {
             <button
               data-testid="sidebar-pin"
               onClick={togglePin}
+              aria-label={isPinned ? "Unpin sidebar — allow it to collapse" : "Pin sidebar — keep it expanded"}
+              aria-pressed={isPinned}
               className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs transition-colors mb-2"
               style={{
                 color: isPinned ? "var(--accent-primary)" : "var(--text-muted)",
                 background: isPinned ? "var(--accent-primary-bg)" : "transparent",
               }}
             >
-              {isPinned ? <PinOff size={14} /> : <Pin size={14} />}
+              {isPinned ? <PinOff size={14} aria-hidden="true" /> : <Pin size={14} aria-hidden="true" />}
               <span>{isPinned ? "Unpin sidebar" : "Pin sidebar"}</span>
             </button>
           )}

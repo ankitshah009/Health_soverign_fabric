@@ -350,7 +350,14 @@ function VerifySignatureSection({ receipt }: { receipt: ReceiptType }) {
       <button
         onClick={handleVerify}
         disabled={verifyState === "loading"}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all"
+        aria-label={
+          verifyState === "success"
+            ? "Signature already verified — click to re-verify"
+            : verifyState === "loading"
+            ? "Verifying cryptographic signature…"
+            : "Verify Ed25519 cryptographic signature"
+        }
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all min-h-[44px]"
         style={{
           background:
             verifyState === "success"
@@ -500,14 +507,27 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
 
   return (
     <div
-      className="relative rounded-xl overflow-hidden animate-fade-in"
+      className="relative rounded-2xl overflow-hidden animate-fade-in"
       style={{
         background: "var(--bg-surface)",
-        border: "1px solid var(--border-subtle)",
+        border: "1px solid var(--border-default)",
+        boxShadow: "0 0 0 1px var(--border-subtle), 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
       }}
+      role="region"
+      aria-label="Cryptographically signed decision receipt"
     >
+      {/* Certificate top accent bar */}
+      <div
+        className="h-1 w-full"
+        style={{
+          background: `linear-gradient(90deg, ${config.color}, var(--accent-primary), ${config.color})`,
+          opacity: 0.8,
+        }}
+        aria-hidden="true"
+      />
+
       {/* Verified watermark */}
-      <div className="verified-stamp">VERIFIED</div>
+      <div className="verified-stamp" aria-hidden="true">VERIFIED</div>
 
       <div className="relative z-10 p-6">
         {/* Header */}
@@ -519,6 +539,7 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
             <CheckCircle2
               className="w-6 h-6"
               style={{ color: "var(--risk-low)" }}
+              aria-hidden="true"
             />
             <h3
               className="type-page-title tracking-wider"
@@ -529,6 +550,9 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
           </div>
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
             Official Patient Action Receipt — verifiable &amp; patient-owned
+          </p>
+          <p className="text-xs mt-1 font-semibold" style={{ color: "var(--accent-primary)", letterSpacing: "0.06em" }}>
+            CRYPTOGRAPHICALLY SIGNED · ED25519
           </p>
         </div>
 
@@ -676,6 +700,7 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
                   <div className="flex gap-2">
                     <button
                       onClick={handleCopyUrl}
+                      aria-label={urlCopied ? "Verification URL copied to clipboard" : "Copy verification URL to clipboard"}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
                       style={{
                         background: urlCopied ? "var(--risk-low-bg)" : "var(--bg-elevated)",
@@ -683,7 +708,7 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
                         color: urlCopied ? "var(--risk-low)" : "var(--text-secondary)",
                       }}
                     >
-                      <Copy className="w-3 h-3" />
+                      <Copy className="w-3 h-3" aria-hidden="true" />
                       {urlCopied ? "Copied!" : "Copy URL"}
                     </button>
                     <a
@@ -723,7 +748,8 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
                 </span>
                 <button
                   onClick={handleCopyHash}
-                  className="flex-shrink-0 p-1.5 rounded-md transition-all hover:opacity-80"
+                  aria-label={copied ? "Signature hash copied to clipboard" : "Copy full signature hash to clipboard"}
+                  className="flex-shrink-0 p-2.5 rounded-md transition-all hover:opacity-80 min-w-[44px] min-h-[44px] flex items-center justify-center"
                   style={{
                     background: copied ? "var(--risk-low-bg)" : "var(--bg-elevated)",
                     border: `1px solid ${copied ? "var(--risk-low-border)" : "var(--border-subtle)"}`,
@@ -731,7 +757,7 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
                   }}
                   title="Copy full hash to clipboard"
                 >
-                  <Copy className="w-3.5 h-3.5" />
+                  <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
                 {copied && (
                   <span className="text-xs animate-fade-in" style={{ color: "var(--risk-low)" }}>

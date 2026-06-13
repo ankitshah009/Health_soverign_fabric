@@ -16,6 +16,11 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
     <div
       className="glass-panel p-3 my-2 cursor-pointer transition-all"
       onClick={() => setExpanded(!expanded)}
+      role="button"
+      tabIndex={0}
+      aria-expanded={expanded}
+      aria-label={`Tool call: ${toolCall.name}. Click to ${expanded ? "collapse" : "expand"} details.`}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(!expanded); } }}
     >
       <div className="flex items-center gap-2">
         <div
@@ -25,6 +30,7 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
             style={{ color: "var(--accent-primary)" }}
+            aria-hidden="true"
           />
         </div>
 

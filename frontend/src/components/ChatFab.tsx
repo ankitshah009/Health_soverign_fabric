@@ -41,7 +41,7 @@ export default function ChatFab() {
           <button
             data-testid="voice-fab"
             onClick={() => openWith("voice")}
-            aria-label="Start voice conversation"
+            aria-label="Open voice advocate — hands-free bill review"
             className="w-16 h-16 rounded-full flex items-center justify-center btn-press"
             style={{
               background: "linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover))",
@@ -49,7 +49,7 @@ export default function ChatFab() {
             }}
             title="Start voice conversation"
           >
-            <Mic size={26} color="var(--bg-base)" strokeWidth={2.5} />
+            <Mic size={26} color="var(--bg-base)" strokeWidth={2.5} aria-hidden="true" />
           </button>
 
           {/* Chat FAB — secondary, smaller */}
@@ -65,7 +65,7 @@ export default function ChatFab() {
             }}
             title="Open chat assistant"
           >
-            <MessageSquare size={20} style={{ color: "var(--accent-primary)" }} />
+            <MessageSquare size={20} style={{ color: "var(--accent-primary)" }} aria-hidden="true" />
           </button>
         </div>
       )}
@@ -90,15 +90,15 @@ export default function ChatFab() {
             {/* Close button */}
             <button
               data-testid="chat-fab-close"
-              aria-label="Close"
+              aria-label="Close patient advocate panel"
               onClick={() => setIsOpen(false)}
-              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+              className="absolute top-3 right-3 z-10 w-11 h-11 rounded-lg flex items-center justify-center transition-colors"
               style={{
                 color: "var(--text-muted)",
                 background: "var(--bg-elevated)",
               }}
             >
-              <X size={16} />
+              <X size={16} aria-hidden="true" />
             </button>
 
             {/* Mode tabs */}
@@ -108,6 +108,8 @@ export default function ChatFab() {
             >
               <button
                 onClick={() => setMode("voice")}
+                aria-label="Switch to voice mode"
+                aria-pressed={mode === "voice"}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
                 style={{
                   background: mode === "voice" ? "var(--accent-primary-bg)" : "transparent",
@@ -115,11 +117,13 @@ export default function ChatFab() {
                   border: mode === "voice" ? "1px solid var(--accent-primary-border)" : "1px solid transparent",
                 }}
               >
-                <Mic size={16} />
+                <Mic size={16} aria-hidden="true" />
                 Voice
               </button>
               <button
                 onClick={() => setMode("chat")}
+                aria-label="Switch to chat mode"
+                aria-pressed={mode === "chat"}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
                 style={{
                   background: mode === "chat" ? "var(--accent-primary-bg)" : "transparent",
@@ -127,7 +131,7 @@ export default function ChatFab() {
                   border: mode === "chat" ? "1px solid var(--accent-primary-border)" : "1px solid transparent",
                 }}
               >
-                <MessageSquare size={16} />
+                <MessageSquare size={16} aria-hidden="true" />
                 Chat
               </button>
             </div>

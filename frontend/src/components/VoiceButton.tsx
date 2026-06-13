@@ -355,6 +355,16 @@ export default function VoiceButton({ autoStart = false }: VoiceButtonProps) {
             border: `2px solid ${buttonBorder}`,
             cursor: "pointer",
           }}
+          aria-label={
+            voiceState === "idle"
+              ? "Start voice conversation with Sovereign Advocate"
+              : voiceState === "connecting"
+              ? "Connecting to voice advocate…"
+              : voiceState === "listening"
+              ? "Stop voice conversation (currently listening)"
+              : "Stop voice conversation (Sovereign is speaking)"
+          }
+          aria-pressed={voiceState !== "idle"}
           title={
             voiceState === "idle"
               ? "Start voice conversation"
@@ -365,16 +375,19 @@ export default function VoiceButton({ autoStart = false }: VoiceButtonProps) {
             <Loader2
               className="w-6 h-6 animate-spin"
               style={{ color: "var(--accent-primary)" }}
+              aria-hidden="true"
             />
           ) : voiceState === "idle" ? (
             <Mic
               className="w-6 h-6"
               style={{ color: "var(--accent-primary)" }}
+              aria-hidden="true"
             />
           ) : (
             <Square
               className="w-6 h-6"
               style={{ color: "var(--text-primary)" }}
+              aria-hidden="true"
             />
           )}
         </button>

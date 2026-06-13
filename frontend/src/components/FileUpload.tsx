@@ -149,10 +149,11 @@ export default function FileUpload({
           <button
             type="button"
             onClick={handleRemove}
-            className="flex-shrink-0 p-1.5 rounded-lg transition-colors hover:opacity-75"
+            aria-label="Remove selected file"
+            className="flex-shrink-0 p-2 rounded-lg transition-colors hover:opacity-75 min-w-[44px] min-h-[44px] flex items-center justify-center"
             style={{ color: "var(--text-secondary)" }}
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -177,6 +178,7 @@ export default function FileUpload({
         type="file"
         onChange={handleInputChange}
         accept="image/*,.pdf"
+        aria-label="Upload medical bill or supporting document (image or PDF, up to 10 MB)"
         className="hidden"
       />
       <Upload

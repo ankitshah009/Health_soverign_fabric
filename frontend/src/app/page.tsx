@@ -329,6 +329,7 @@ export default function DashboardPage() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                aria-label="Upload a medical bill or EOB image to use with voice or chat"
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -384,10 +385,11 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={handleRemovePending}
-                className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-white/10 flex-shrink-0 cursor-pointer"
+                aria-label="Remove uploaded document"
+                className="w-11 h-11 rounded-lg flex items-center justify-center transition-colors hover:bg-white/10 flex-shrink-0 cursor-pointer"
                 title="Remove photo"
               >
-                <X className="w-4 h-4" style={{ color: "var(--text-muted)" }} />
+                <X className="w-4 h-4" style={{ color: "var(--text-muted)" }} aria-hidden="true" />
               </button>
             </div>
           )}
@@ -466,11 +468,12 @@ export default function DashboardPage() {
           </h2>
           <Link
             href="/claims"
+            aria-label="View all cases"
             className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80"
             style={{ color: "var(--accent-primary)" }}
           >
             View all
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </Link>
         </div>
 
