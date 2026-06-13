@@ -24,5 +24,13 @@ backend/uploads/*
 
 # Test artifacts
 .playwright-mcp/
-/sovereign-dashboard.png
+/*.png
 /frontend.log
+
+# SQLite sidecars (WAL mode)
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Local tooling / vendored skills
+.claude/
