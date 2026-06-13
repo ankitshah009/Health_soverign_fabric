@@ -533,25 +533,61 @@ function AnalysisTab({
   const numericScore = getNumericFraudScore(claim.fraud_score);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Web Investigation (Yutori research findings) */}
-      <WebInvestigation signals={fraudSignals} />
+    <div className="space-y-8 animate-fade-in">
+      {/* Findings section */}
+      <section aria-labelledby="findings-heading">
+        <h2
+          id="findings-heading"
+          className="text-xs font-semibold uppercase tracking-widest mb-4"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Findings
+        </h2>
+        <WebInvestigation signals={fraudSignals} />
+      </section>
 
-      {/* Risk Radar + Simulation side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RiskRadar
-          fraudScore={numericScore}
-          riskLevel={claim.risk_level}
-          riskAssessment={claim.risk_assessment}
-        />
-        <SimulationCard simulation={claim.simulation_result} />
-      </div>
+      {/* Severity + Recovery side by side */}
+      <section aria-labelledby="severity-recovery-heading">
+        <h2
+          id="severity-recovery-heading"
+          className="text-xs font-semibold uppercase tracking-widest mb-4"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Severity &amp; Recovery Simulation
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RiskRadar
+            fraudScore={numericScore}
+            riskLevel={claim.risk_level}
+            riskAssessment={claim.risk_assessment}
+          />
+          <SimulationCard simulation={claim.simulation_result} />
+        </div>
+      </section>
 
-      {/* Risk Timeline — per-stage risk score evolution */}
-      <RiskTimeline claimId={claimId} status={claim.status} />
+      {/* Pipeline timeline */}
+      <section aria-labelledby="pipeline-heading">
+        <h2
+          id="pipeline-heading"
+          className="text-xs font-semibold uppercase tracking-widest mb-4"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Review Timeline
+        </h2>
+        <RiskTimeline claimId={claimId} status={claim.status} />
+      </section>
 
       {/* Investigation Feed */}
-      <InvestigationFeed key={claimId} claimId={claimId} status={claim.status} />
+      <section aria-labelledby="feed-heading">
+        <h2
+          id="feed-heading"
+          className="text-xs font-semibold uppercase tracking-widest mb-4"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Live Investigation Feed
+        </h2>
+        <InvestigationFeed key={claimId} claimId={claimId} status={claim.status} />
+      </section>
     </div>
   );
 }
@@ -564,6 +600,12 @@ function DecisionTab({ claim }: { claim: ClaimData }) {
   if (!claim.receipt) {
     return (
       <div className="animate-fade-in">
+        <h2
+          className="text-xs font-semibold uppercase tracking-widest mb-4"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Signed Receipt
+        </h2>
         <div
           className="card p-12 text-center"
           style={{ color: "var(--text-muted)" }}
@@ -576,7 +618,13 @@ function DecisionTab({ claim }: { claim: ClaimData }) {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in space-y-4">
+      <h2
+        className="text-xs font-semibold uppercase tracking-widest"
+        style={{ color: "var(--text-muted)" }}
+      >
+        Signed Receipt
+      </h2>
       <DecisionReceipt receipt={claim.receipt} />
     </div>
   );
@@ -796,16 +844,22 @@ export default function ClaimDetailPage({
           {fraudScore !== null && fraudScore !== undefined && (
             <div className="flex-shrink-0 text-right">
               <div
-                className="text-3xl font-bold stat-value"
-                style={{ color: fraudScoreColor }}
+                className="text-4xl font-bold tabular-nums leading-none"
+                style={{
+                  color: fraudScoreColor,
+                  fontVariantNumeric: "tabular-nums",
+                }}
               >
                 {Math.round(fraudScore)}
-                <span className="text-lg" style={{ color: "var(--text-muted)" }}>
+                <span className="text-xl font-normal" style={{ color: "var(--text-muted)" }}>
                   /100
                 </span>
               </div>
-              <div className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Overcharge / Error Score
+              <div
+                className="text-[10px] font-semibold uppercase tracking-widest mt-1"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Overcharge Score
               </div>
             </div>
           )}

@@ -61,15 +61,15 @@ function getScoreBgColor(score: number): string {
 function getRiskLabel(level: string | null | undefined): string {
   switch (level) {
     case "low":
-      return "Low Risk";
+      return "Low Severity";
     case "medium":
-      return "Medium Risk";
+      return "Medium Severity";
     case "high":
-      return "High Risk";
+      return "High Severity";
     case "critical":
-      return "Critical Risk";
+      return "Critical Severity";
     default:
-      return "Calculating...";
+      return "Calculating…";
   }
 }
 
@@ -104,50 +104,41 @@ export default function RiskRadar({ fraudScore, riskLevel, riskAssessment }: Ris
 
   return (
     <div className="card p-6">
-      <h3
-        className="type-section-title mb-4 flex items-center gap-2"
-        style={{ color: "var(--text-primary)" }}
-      >
-        <Activity className="w-5 h-5" style={{ color: "var(--accent-primary)" }} />
-        Risk Radar
-      </h3>
-
-      <div className="flex flex-col items-center">
-        {/* Score display with amber accent border/glow */}
-        <div
-          className="w-28 h-28 rounded-full flex flex-col items-center justify-center mb-4"
+      <div className="flex items-center justify-between mb-5">
+        <h3
+          className="type-section-title flex items-center gap-2"
+          style={{ color: "var(--text-primary)" }}
+        >
+          <Activity className="w-5 h-5" style={{ color: "var(--accent-primary)" }} />
+          Overcharge Severity
+        </h3>
+        {/* Score chip inline with heading */}
+        <span
+          className="text-xs font-semibold px-2.5 py-1 rounded-full tabular-nums"
           style={{
-            backgroundColor: scoreBg,
-            border: `2px solid ${scoreColor}`,
-            boxShadow: `0 0 20px ${scoreColor}33`,
+            color: scoreColor,
+            background: scoreBg,
+            fontVariantNumeric: "tabular-nums",
           }}
         >
-          <span className="text-3xl font-bold stat-value" style={{ color: scoreColor }}>
-            {Math.round(overallScore)}
-          </span>
-          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>/100</span>
-        </div>
-
-        <span
-          className="text-sm font-medium mb-6 px-3 py-1 rounded-full"
-          style={{ color: scoreColor, backgroundColor: scoreBg }}
-        >
-          {riskLabel}
+          {Math.round(overallScore)}/100 — {riskLabel}
         </span>
+      </div>
 
-        {/* Radar chart with charcoal grid lines */}
-        <div className="w-full" style={{ height: 280, minWidth: 200 }}>
+      <div className="flex flex-col items-center">
+        {/* Radar chart */}
+        <div className="w-full" style={{ height: 260, minWidth: 200 }}>
           <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="70%">
               <PolarGrid stroke={CHART_COLORS.grid} strokeOpacity={0.6} />
               <PolarAngleAxis dataKey="axis" tick={{ fill: CHART_COLORS.axisLabel, fontSize: 11 }} />
               <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: CHART_COLORS.axisTick, fontSize: 10 }} axisLine={false} />
               <Radar
-                name="Risk"
+                name="Overcharge"
                 dataKey="value"
                 stroke={scoreColor}
                 fill={scoreColor}
-                fillOpacity={0.25}
+                fillOpacity={0.22}
                 isAnimationActive={true}
                 animationDuration={1200}
                 animationEasing="ease-out"
@@ -156,12 +147,10 @@ export default function RiskRadar({ fraudScore, riskLevel, riskAssessment }: Ris
           </ResponsiveContainer>
         </div>
 
-        {/* Risk assessment reasoning - glass-panel */}
+        {/* Assessment reasoning */}
         {riskAssessment?.reasoning && (
           <div className="w-full mt-4 glass-panel rounded-lg p-3">
-            <h4 className="label mb-2">
-              Sovereign Assessment
-            </h4>
+            <h4 className="label mb-2">Sovereign Assessment</h4>
             <p className="text-sm" style={{ color: "var(--text-primary)" }}>
               {riskAssessment.reasoning}
             </p>

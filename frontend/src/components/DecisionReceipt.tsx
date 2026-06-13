@@ -230,10 +230,16 @@ function ScanQRCode({ url }: { url: string }) {
   const quietZone = 4 * moduleSize;
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-2">
+      {/* Framed QR cell */}
       <div
-        className="rounded-lg overflow-hidden p-1"
-        style={{ background: "#ffffff", display: "inline-block" }}
+        style={{
+          background: "#ffffff",
+          border: "3px solid #ffffff",
+          borderRadius: "6px",
+          display: "inline-block",
+          boxShadow: "0 0 0 1px rgba(255,255,255,0.12)",
+        }}
         title="Scan to verify — patient-owned proof"
       >
         <svg
@@ -260,8 +266,11 @@ function ScanQRCode({ url }: { url: string }) {
           )}
         </svg>
       </div>
-      <p className="text-center" style={{ color: "var(--text-muted)", fontSize: "0.6rem", letterSpacing: "0.04em", textTransform: "uppercase", fontWeight: 600 }}>
-        Scan to verify &mdash; patient-owned proof
+      <p
+        className="type-micro text-center"
+        style={{ color: "var(--text-muted)", letterSpacing: "0.1em" }}
+      >
+        Scan to verify
       </p>
     </div>
   );
@@ -317,19 +326,34 @@ function VerifySignatureSection({ receipt }: { receipt: ReceiptType }) {
 
   return (
     <div
-      className="pt-4 mt-4"
+      className="pt-5 mt-5"
       style={{ borderTop: "1px solid var(--border-subtle)" }}
     >
-      <h4 className="label mb-3">Cryptographic Signature</h4>
+      {/* Section heading + badge row */}
+      <div className="flex items-center gap-3 mb-4">
+        <h4 className="type-subtitle" style={{ color: "var(--text-primary)" }}>Cryptographic Signature</h4>
+        <span
+          className="type-micro"
+          style={{
+            color: "var(--accent-primary)",
+            background: "var(--accent-primary-bg)",
+            border: "1px solid var(--accent-primary-border)",
+            borderRadius: "4px",
+            padding: "2px 7px",
+          }}
+        >
+          Ed25519
+        </span>
+      </div>
 
       {/* Key metadata */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <div>
           <span className="label block mb-1">Algorithm</span>
           {keyLoading ? (
             <div className="h-3 skeleton w-20" />
           ) : (
-            <span className="font-mono text-xs" style={{ color: "var(--text-secondary)" }}>
+            <span className="type-mono" style={{ color: "var(--text-secondary)" }}>
               {verificationKey?.algorithm ?? "HMAC-SHA256"}
             </span>
           )}
@@ -339,7 +363,7 @@ function VerifySignatureSection({ receipt }: { receipt: ReceiptType }) {
           {keyLoading ? (
             <div className="h-3 skeleton w-24" />
           ) : (
-            <span className="font-mono text-xs" style={{ color: "var(--text-secondary)" }}>
+            <span className="type-mono" style={{ color: "var(--text-secondary)" }}>
               {verificationKey?.key_id ?? "—"}
             </span>
           )}
@@ -430,7 +454,7 @@ function VerifySignatureSection({ receipt }: { receipt: ReceiptType }) {
           </p>
           {verifyResult?.verified_at && (
             <p
-              className="text-xs mt-1 font-mono"
+              className="type-mono mt-1"
               style={{ color: "var(--text-muted)" }}
             >
               Verified at: {new Date(verifyResult.verified_at).toLocaleString()}
@@ -516,12 +540,11 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
       role="region"
       aria-label="Cryptographically signed decision receipt"
     >
-      {/* Certificate top accent bar */}
+      {/* Certificate top accent bar — decision color */}
       <div
-        className="h-1 w-full"
         style={{
-          background: `linear-gradient(90deg, ${config.color}, var(--accent-primary), ${config.color})`,
-          opacity: 0.8,
+          height: "3px",
+          background: `linear-gradient(90deg, ${config.color} 0%, var(--accent-primary) 50%, ${config.color} 100%)`,
         }}
         aria-hidden="true"
       />
@@ -530,218 +553,279 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
       <div className="verified-stamp" aria-hidden="true">VERIFIED</div>
 
       <div className="relative z-10 p-6">
-        {/* Header */}
+
+        {/* ── Certificate header ─────────────────────────────────── */}
         <div
-          className="text-center mb-6 pb-6"
+          className="mb-6 pb-6"
           style={{ borderBottom: "1px solid var(--border-subtle)" }}
         >
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <CheckCircle2
-              className="w-6 h-6"
-              style={{ color: "var(--risk-low)" }}
-              aria-hidden="true"
-            />
-            <h3
-              className="type-page-title tracking-wider"
-              style={{ color: "var(--text-primary)" }}
+          {/* Top row: title left, crypto seal right */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2.5 mb-1">
+                <CheckCircle2
+                  className="w-5 h-5 flex-shrink-0"
+                  style={{ color: "var(--risk-low)" }}
+                  aria-hidden="true"
+                />
+                <h3
+                  className="type-page-title tracking-wide"
+                  style={{ color: "var(--text-primary)", letterSpacing: "0.04em" }}
+                >
+                  DECISION RECEIPT
+                </h3>
+              </div>
+              <p className="type-caption" style={{ color: "var(--text-muted)", marginLeft: "29px" }}>
+                Official Patient Action Receipt — verifiable &amp; patient-owned
+              </p>
+            </div>
+
+            {/* Crypto seal — right-aligned, authoritative */}
+            <div
+              className="flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2"
+              style={{
+                border: "1px solid var(--accent-primary-border)",
+                borderRadius: "6px",
+                background: "var(--accent-primary-bg)",
+                minWidth: "96px",
+              }}
             >
-              DECISION RECEIPT
-            </h3>
+              <span className="type-micro" style={{ color: "var(--accent-primary)", letterSpacing: "0.12em" }}>
+                SIGNED
+              </span>
+              <span className="type-mono" style={{ color: "var(--accent-primary)", fontSize: "0.65rem" }}>
+                Ed25519
+              </span>
+            </div>
           </div>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            Official Patient Action Receipt — verifiable &amp; patient-owned
-          </p>
-          <p className="text-xs mt-1 font-semibold" style={{ color: "var(--accent-primary)", letterSpacing: "0.06em" }}>
-            CRYPTOGRAPHICALLY SIGNED · ED25519
-          </p>
         </div>
 
-        {/* Decision */}
+        {/* ── Decision verdict ───────────────────────────────────── */}
         <div
-          className="text-center py-6 mb-6 rounded-lg"
+          className="mb-6 px-6 py-5"
           style={{
             background: config.bg,
-            border: `2px solid ${config.border}`,
-            boxShadow: `0 0 24px ${config.border}40`,
+            border: `1px solid ${config.border}`,
+            borderLeft: `4px solid ${config.color}`,
+            borderRadius: "8px",
           }}
         >
           <span
-            className="type-display tracking-widest"
-            style={{ color: config.color }}
+            className="type-display"
+            style={{
+              color: config.color,
+              fontSize: "2.25rem",
+              letterSpacing: "0.06em",
+              fontWeight: 900,
+            }}
           >
             {config.label}
           </span>
           {receipt.payout_amount !== undefined &&
             receipt.payout_amount !== null &&
             receipt.payout_amount > 0 && (
-              <div className="mt-3">
+              <div className="mt-3 flex items-baseline gap-2">
                 <span
-                  className="text-3xl font-bold stat-value"
-                  style={{ color: "var(--text-primary)" }}
+                  className="stat-value"
+                  style={{
+                    color: "var(--text-primary)",
+                    fontSize: "2rem",
+                    fontVariantNumeric: "tabular-nums",
+                    fontWeight: 700,
+                  }}
                 >
                   ${receipt.payout_amount.toLocaleString()}
                 </span>
-                <span className="text-sm ml-2" style={{ color: "var(--text-secondary)" }}>
+                <span className="type-caption" style={{ color: "var(--text-secondary)" }}>
                   recoverable savings
                 </span>
               </div>
             )}
         </div>
 
-        {/* Details grid */}
-        <div className="space-y-4 text-sm">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <span className="label block mb-1">Receipt ID</span>
-              <span className="font-mono text-xs" style={{ color: "var(--text-primary)" }}>
-                {receipt.receipt_id}
-              </span>
-            </div>
-            <div>
-              <span className="label block mb-1">Case ID</span>
-              <span className="font-mono text-xs" style={{ color: "var(--text-primary)" }}>
-                {receipt.claim_id}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <span className="label block mb-1">Actioned By</span>
-              <span style={{ color: "var(--text-primary)" }}>{receipt.approved_by}</span>
-            </div>
-            <div>
-              <span className="label block mb-1">Timestamp</span>
-              <span className="text-xs" style={{ color: "var(--text-primary)" }}>
-                {formattedDate}
-              </span>
-            </div>
-          </div>
-
-          {/* Evidence Summary */}
-          <div className="card-elevated rounded-lg p-4 mt-4">
-            <h4 className="label mb-3">Evidence Summary</h4>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div
-                  className="text-lg font-bold stat-value"
-                  style={{ color: "var(--accent-primary)" }}
-                >
-                  {typeof receipt.identity_confidence === "number"
-                    ? `${Math.round(receipt.identity_confidence * 100)}%`
-                    : "N/A"}
-                </div>
-                <div className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                  Identity Confidence
-                </div>
-              </div>
-              <div>
-                <div
-                  className="text-lg font-bold stat-value"
-                  style={{ color: "var(--risk-medium)" }}
-                >
-                  {receipt.fraud_score ?? "N/A"}
-                </div>
-                <div className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                  Error Score
-                </div>
-              </div>
-              <div>
-                <div
-                  className="text-lg font-bold stat-value"
-                  style={{ color: "var(--risk-low)" }}
-                >
-                  {receipt.policy_check || "N/A"}
-                </div>
-                <div className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                  Policy Check
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {receipt.simulation_summary && (
-            <div className="card-elevated rounded-lg p-3">
-              <span className="label block mb-1">Simulation Summary</span>
-              <p className="text-sm" style={{ color: "var(--text-primary)" }}>
-                {receipt.simulation_summary}
-              </p>
-            </div>
-          )}
-
-          {/* Verification URL + QR decoration */}
-          {verificationUrl && (
+        {/* ── Key fields: receipt table ──────────────────────────── */}
+        <div className="space-y-0 mb-5">
+          {/* Divider rows — tabular receipt style */}
+          {[
+            { label: "Receipt ID", value: receipt.receipt_id, mono: true },
+            { label: "Case ID", value: receipt.claim_id, mono: true },
+            {
+              label: "Actioned By",
+              value: receipt.approved_by,
+              mono: false,
+            },
+            { label: "Timestamp", value: formattedDate, mono: true },
+          ].map(({ label, value, mono }, idx, arr) => (
             <div
-              className="pt-4 mt-4"
-              style={{ borderTop: "1px solid var(--border-subtle)" }}
+              key={label}
+              className="flex items-start justify-between gap-4 py-3"
+              style={{
+                borderBottom: idx < arr.length - 1 ? "1px solid var(--border-faint)" : "none",
+              }}
             >
-              <h4 className="label mb-3">Verification</h4>
-              <div className="flex items-start gap-4">
-                {/* Scannable QR code */}
-                <div className="flex-shrink-0">
-                  <ScanQRCode url={verificationUrl} />
-                </div>
+              <span className="label flex-shrink-0" style={{ paddingTop: "1px" }}>{label}</span>
+              <span
+                className={mono ? "type-mono text-right break-all" : "text-sm text-right"}
+                style={{
+                  color: "var(--text-primary)",
+                  fontVariantNumeric: mono ? "tabular-nums" : undefined,
+                  maxWidth: "65%",
+                }}
+              >
+                {value ?? "—"}
+              </span>
+            </div>
+          ))}
+        </div>
 
-                {/* URL + actions */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>
-                    Share this URL to verify the receipt authenticity:
-                  </p>
-                  <div
-                    className="rounded-lg px-3 py-2 mb-2 font-mono text-xs break-all"
+        {/* ── Evidence summary ───────────────────────────────────── */}
+        <div className="card-elevated rounded-lg p-4 mb-5">
+          <h4 className="label mb-3">Evidence Summary</h4>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div
+                className="stat-value"
+                style={{
+                  color: "var(--accent-primary)",
+                  fontSize: "1.25rem",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {typeof receipt.identity_confidence === "number"
+                  ? `${Math.round(receipt.identity_confidence * 100)}%`
+                  : "N/A"}
+              </div>
+              <div className="type-micro mt-1" style={{ color: "var(--text-muted)" }}>
+                Identity Confidence
+              </div>
+            </div>
+            <div>
+              <div
+                className="stat-value"
+                style={{
+                  color: "var(--risk-medium)",
+                  fontSize: "1.25rem",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {receipt.fraud_score ?? "N/A"}
+              </div>
+              <div className="type-micro mt-1" style={{ color: "var(--text-muted)" }}>
+                Error Score
+              </div>
+            </div>
+            <div>
+              <div
+                className="stat-value"
+                style={{
+                  color: "var(--risk-low)",
+                  fontSize: "1.25rem",
+                }}
+              >
+                {receipt.policy_check || "N/A"}
+              </div>
+              <div className="type-micro mt-1" style={{ color: "var(--text-muted)" }}>
+                Policy Check
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {receipt.simulation_summary && (
+          <div className="card-elevated rounded-lg p-3 mb-5">
+            <span className="label block mb-1">Simulation Summary</span>
+            <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+              {receipt.simulation_summary}
+            </p>
+          </div>
+        )}
+
+        {/* ── Verification: QR + URL ─────────────────────────────── */}
+        {verificationUrl && (
+          <div
+            className="pt-5 mt-5"
+            style={{ borderTop: "1px solid var(--border-subtle)" }}
+          >
+            <h4 className="label mb-4">Verification</h4>
+
+            {/* Two-column: QR left, URL actions right */}
+            <div className="flex items-start gap-5">
+              {/* QR — prominent, framed */}
+              <div className="flex-shrink-0">
+                <ScanQRCode url={verificationUrl} />
+              </div>
+
+              {/* URL + action buttons */}
+              <div className="flex-1 min-w-0">
+                <p className="type-caption mb-2" style={{ color: "var(--text-muted)" }}>
+                  Share this URL to independently verify receipt authenticity:
+                </p>
+                <div
+                  className="rounded-lg px-3 py-2 mb-3"
+                  style={{
+                    background: "var(--bg-elevated)",
+                    border: "1px solid var(--border-default)",
+                    borderLeft: "3px solid var(--accent-primary-border)",
+                  }}
+                >
+                  <span className="type-mono break-all" style={{ color: "var(--text-secondary)" }}>
+                    {verificationUrl}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCopyUrl}
+                    aria-label={urlCopied ? "Verification URL copied to clipboard" : "Copy verification URL to clipboard"}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all min-h-[44px]"
                     style={{
-                      background: "var(--bg-elevated)",
-                      border: "1px solid var(--border-default)",
-                      color: "var(--text-secondary)",
+                      background: urlCopied ? "var(--risk-low-bg)" : "var(--bg-elevated)",
+                      border: `1px solid ${urlCopied ? "var(--risk-low-border)" : "var(--border-default)"}`,
+                      color: urlCopied ? "var(--risk-low)" : "var(--text-secondary)",
+                      cursor: "pointer",
                     }}
                   >
-                    {verificationUrl}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleCopyUrl}
-                      aria-label={urlCopied ? "Verification URL copied to clipboard" : "Copy verification URL to clipboard"}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-                      style={{
-                        background: urlCopied ? "var(--risk-low-bg)" : "var(--bg-elevated)",
-                        border: `1px solid ${urlCopied ? "var(--risk-low-border)" : "var(--border-default)"}`,
-                        color: urlCopied ? "var(--risk-low)" : "var(--text-secondary)",
-                      }}
-                    >
-                      <Copy className="w-3 h-3" aria-hidden="true" />
-                      {urlCopied ? "Copied!" : "Copy URL"}
-                    </button>
-                    <a
-                      href={verificationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all hover:opacity-80"
-                      style={{
-                        background: "var(--accent-primary-bg)",
-                        border: "1px solid var(--accent-primary-border)",
-                        color: "var(--accent-primary)",
-                        textDecoration: "none",
-                      }}
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                      Open
-                    </a>
-                  </div>
+                    <Copy className="w-3 h-3" aria-hidden="true" />
+                    {urlCopied ? "Copied!" : "Copy URL"}
+                  </button>
+                  <a
+                    href={verificationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all hover:opacity-80 min-h-[44px]"
+                    style={{
+                      background: "var(--accent-primary-bg)",
+                      border: "1px solid var(--accent-primary-border)",
+                      color: "var(--accent-primary)",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Open
+                  </a>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Signature hash with copy button */}
-          {receipt.signature_hash && (
+        {/* ── Signature hash — visually contained monospace block ── */}
+        {receipt.signature_hash && (
+          <div
+            className="mt-5 pt-5"
+            style={{ borderTop: "1px solid var(--border-subtle)" }}
+          >
+            <span className="label block mb-2">Signature Hash</span>
             <div
-              className="pt-4 mt-4"
-              style={{ borderTop: "1px solid var(--border-subtle)" }}
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-default)",
+                borderRadius: "6px",
+                padding: "10px 14px",
+              }}
             >
-              <span className="label block mb-1">Signature Hash</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <span
-                  className="font-mono text-xs break-all"
+                  className="type-mono break-all flex-1"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   {truncatedHash}
@@ -751,26 +835,27 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
                   aria-label={copied ? "Signature hash copied to clipboard" : "Copy full signature hash to clipboard"}
                   className="flex-shrink-0 p-2.5 rounded-md transition-all hover:opacity-80 min-w-[44px] min-h-[44px] flex items-center justify-center"
                   style={{
-                    background: copied ? "var(--risk-low-bg)" : "var(--bg-elevated)",
+                    background: copied ? "var(--risk-low-bg)" : "var(--bg-overlay)",
                     border: `1px solid ${copied ? "var(--risk-low-border)" : "var(--border-subtle)"}`,
                     color: copied ? "var(--risk-low)" : "var(--text-secondary)",
+                    cursor: "pointer",
                   }}
                   title="Copy full hash to clipboard"
                 >
                   <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
                 {copied && (
-                  <span className="text-xs animate-fade-in" style={{ color: "var(--risk-low)" }}>
+                  <span className="type-caption animate-fade-in" style={{ color: "var(--risk-low)" }}>
                     Copied
                   </span>
                 )}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Cryptographic Signature Verification */}
-          <VerifySignatureSection receipt={receipt} />
-        </div>
+        {/* ── Cryptographic Signature Verification inline section ── */}
+        <VerifySignatureSection receipt={receipt} />
       </div>
     </div>
   );

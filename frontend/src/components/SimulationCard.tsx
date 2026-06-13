@@ -96,7 +96,7 @@ export default function SimulationCard({ simulation }: SimulationCardProps) {
           style={{ color: "var(--text-primary)" }}
         >
           <FlaskConical className="w-5 h-5" style={{ color: "var(--status-escalated)" }} />
-          Simulation Preview
+          Recovery Simulation
         </h3>
         <div className="space-y-3">
           <div className="h-4 skeleton w-3/4"></div>
@@ -119,16 +119,16 @@ export default function SimulationCard({ simulation }: SimulationCardProps) {
         style={{ color: "var(--text-primary)" }}
       >
         <FlaskConical className="w-5 h-5" style={{ color: "var(--status-escalated)" }} />
-        Simulation Preview
+        Recovery Simulation
       </h3>
       <p className="text-xs mb-6" style={{ color: "var(--text-muted)" }}>
-        &quot;What if this appeal is filed now?&quot;
+        If this appeal is filed now
       </p>
 
       <div className="space-y-5">
         <ProgressBar
           value={approvalPct}
-          label="Approval Probability"
+          label="Appeal Success Probability"
           colorVar="var(--risk-low)"
         />
         <ProgressBar
@@ -138,18 +138,21 @@ export default function SimulationCard({ simulation }: SimulationCardProps) {
         />
 
         <div className="flex items-center justify-between">
-          <span className="text-sm" style={{ color: "var(--text-primary)" }}>Dispute Escalation</span>
+          <span className="text-sm" style={{ color: "var(--text-primary)" }}>Escalation Likelihood</span>
           <LikelihoodBadge level={fraudLevel} />
         </div>
 
         <div
-          className="flex items-center justify-between pt-2"
+          className="flex items-center justify-between pt-3"
           style={{ borderTop: "1px solid var(--border-subtle)" }}
         >
-          <span className="text-sm" style={{ color: "var(--text-primary)" }}>Financial Exposure</span>
+          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Financial Exposure</span>
           <span
-            className="text-lg font-bold stat-value"
-            style={{ color: "var(--text-primary)" }}
+            className="text-xl font-bold tabular-nums"
+            style={{
+              color: "var(--text-primary)",
+              fontVariantNumeric: "tabular-nums",
+            }}
           >
             ${simulation.financial_exposure?.toLocaleString() || "0"}
           </span>
@@ -157,9 +160,7 @@ export default function SimulationCard({ simulation }: SimulationCardProps) {
 
         {simulation.historical_comparison && (
           <div className="card-elevated rounded-lg p-4 mt-4">
-            <h4 className="label mb-2">
-              Historical Comparison
-            </h4>
+            <h4 className="label mb-2">Historical Comparison</h4>
             <p className="text-sm" style={{ color: "var(--text-primary)" }}>{simulation.historical_comparison}</p>
           </div>
         )}

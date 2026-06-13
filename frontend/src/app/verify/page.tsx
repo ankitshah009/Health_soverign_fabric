@@ -457,10 +457,11 @@ export default function VerifyPage() {
   const StatusIcon = isValid ? ShieldCheck : ShieldAlert;
 
   return (
-    <div className="min-h-screen px-4 py-10 flex flex-col items-center" style={{ background: "var(--bg-base)" }}>
+    <div className="min-h-screen px-4 py-12 flex flex-col items-center" style={{ background: "var(--bg-base)" }}>
+
       {/* Brand header */}
-      <div className="w-full max-w-xl mb-8 text-center">
-        <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: "var(--accent-primary)" }}>
+      <div className="w-full max-w-xl mb-10">
+        <p className="type-overline mb-1" style={{ color: "var(--accent-primary)" }}>
           Sovereign Patient Advocate
         </p>
         <h1 className="type-page-title" style={{ color: "var(--text-primary)" }}>
@@ -468,181 +469,259 @@ export default function VerifyPage() {
         </h1>
       </div>
 
-      <div className="w-full max-w-xl space-y-4 animate-fade-in">
-        {/* Big verdict */}
+      <div className="w-full max-w-xl space-y-5 animate-fade-in">
+
+        {/* ── Verdict block ─────────────────────────────────────────── */}
         <div
-          className="rounded-2xl p-8 text-center"
           role="status"
           aria-live="polite"
           aria-label={isValid ? "Receipt signature is valid" : isError ? "Verification error" : "Receipt signature is invalid"}
           style={{
             background: statusBg,
-            border: `2px solid ${statusBorder}`,
-            boxShadow: `0 0 48px ${statusBorder}40, 0 4px 24px rgba(0,0,0,0.3)`,
+            border: `1px solid ${statusBorder}`,
+            borderLeft: `4px solid ${statusColor}`,
+            borderRadius: "12px",
+            overflow: "hidden",
           }}
         >
-          <StatusIcon className="w-16 h-16 mx-auto mb-5" style={{ color: statusColor }} aria-hidden="true" />
-          <div
-            className="type-display tracking-widest mb-3 font-black"
-            style={{ color: statusColor, fontSize: "2rem", letterSpacing: "0.12em" }}
-          >
-            {isValid ? "✓ VALID" : isError ? "✗ ERROR" : "✗ INVALID"}
-          </div>
-          {isValid && (
+          {/* Top rule */}
+          <div style={{ height: "2px", background: statusColor, opacity: 0.35 }} aria-hidden="true" />
+
+          <div className="px-8 py-8">
+            {/* Overline */}
+            <p className="type-overline mb-4" style={{ color: statusColor, opacity: 0.75 }}>
+              {isValid ? "Ed25519 · Cryptographic Verification" : isError ? "Verification Error" : "Ed25519 · Cryptographic Verification"}
+            </p>
+
+            {/* Verdict row */}
+            <div className="flex items-center gap-4 mb-4">
+              <StatusIcon
+                className="w-10 h-10 flex-shrink-0"
+                style={{ color: statusColor }}
+                aria-hidden="true"
+              />
+              <div
+                className="type-display font-black"
+                style={{
+                  color: statusColor,
+                  fontSize: "2.75rem",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                }}
+              >
+                {isValid ? "VALID" : isError ? "ERROR" : "INVALID"}
+              </div>
+            </div>
+
+            {/* Sub-message */}
             <p
-              className="text-xs font-semibold mb-3 tracking-widest uppercase"
-              style={{ color: statusColor, opacity: 0.75 }}
+              className="text-sm leading-relaxed"
+              style={{ color: isValid ? "var(--risk-low-text)" : "var(--risk-critical-text)" }}
             >
-              Cryptographic signature verified — Ed25519
+              {isError
+                ? errorMsg
+                : verifyResult?.message ?? (isValid ? "Signature verified successfully." : "Signature verification failed.")}
             </p>
-          )}
-          <p className="text-sm" style={{ color: isValid ? "var(--risk-low-text)" : "var(--risk-critical-text)" }}>
-            {isError
-              ? errorMsg
-              : verifyResult?.message ?? (isValid ? "Signature verified successfully." : "Signature verification failed.")}
-          </p>
-          {verifyResult?.verified_at && (
-            <p className="text-xs mt-3 font-mono" style={{ color: "var(--text-muted)" }}>
-              Verified at: {formatDate(verifyResult.verified_at)}
-            </p>
-          )}
+
+            {verifyResult?.verified_at && (
+              <p className="type-mono mt-3" style={{ color: "var(--text-muted)" }}>
+                Verified {formatDate(verifyResult.verified_at)}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Receipt details */}
+        {/* ── Receipt details ──────────────────────────────────────── */}
         {receipt && (
           <div
-            className="rounded-2xl p-6 space-y-4"
-            style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}
+            style={{
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "12px",
+              overflow: "hidden",
+            }}
           >
-            <h2 className="type-section-title" style={{ color: "var(--text-primary)" }}>Receipt Details</h2>
+            {/* Section header */}
+            <div
+              className="px-6 py-4"
+              style={{ borderBottom: "1px solid var(--border-subtle)" }}
+            >
+              <h2 className="type-section-title" style={{ color: "var(--text-primary)" }}>Receipt Details</h2>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <span className="label block mb-1">Receipt ID</span>
-                <span className="font-mono text-xs break-all" style={{ color: "var(--text-primary)" }}>
-                  {receipt.receipt_id ?? "—"}
-                </span>
+            <div className="px-6 py-5 space-y-5">
+              {/* ID row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <span className="label block mb-1.5">Receipt ID</span>
+                  <span className="type-mono break-all" style={{ color: "var(--text-primary)" }}>
+                    {receipt.receipt_id ?? "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="label block mb-1.5">Case ID</span>
+                  <span className="type-mono break-all" style={{ color: "var(--text-primary)" }}>
+                    {receipt.claim_id ?? "—"}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="label block mb-1">Case ID</span>
-                <span className="font-mono text-xs break-all" style={{ color: "var(--text-primary)" }}>
-                  {receipt.claim_id ?? "—"}
-                </span>
+
+              {/* Decision + agent row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <span className="label block mb-1.5">Decision</span>
+                  <span
+                    className="text-sm font-bold uppercase tracking-widest"
+                    style={{
+                      color: receipt.action === "approve" || receipt.action === "approved"
+                        ? "var(--risk-low)"
+                        : receipt.action === "deny" || receipt.action === "denied"
+                        ? "var(--risk-critical)"
+                        : "var(--risk-medium)",
+                    }}
+                  >
+                    {receipt.action ?? "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="label block mb-1.5">Actioned By</span>
+                  <span className="text-sm" style={{ color: "var(--text-primary)" }}>
+                    {receipt.approved_by ?? "—"}
+                  </span>
+                </div>
               </div>
+
+              {/* Timestamp */}
               <div>
-                <span className="label block mb-1">Decision</span>
-                <span
-                  className="text-sm font-semibold uppercase tracking-wide"
-                  style={{
-                    color: receipt.action === "approve" || receipt.action === "approved"
-                      ? "var(--risk-low)"
-                      : receipt.action === "deny" || receipt.action === "denied"
-                      ? "var(--risk-critical)"
-                      : "var(--risk-medium)",
-                  }}
-                >
-                  {receipt.action ?? "—"}
-                </span>
-              </div>
-              <div>
-                <span className="label block mb-1">Actioned By</span>
-                <span className="text-sm" style={{ color: "var(--text-primary)" }}>
-                  {receipt.approved_by ?? "—"}
-                </span>
-              </div>
-              <div className="sm:col-span-2">
-                <span className="label block mb-1">Timestamp</span>
-                <span className="text-xs font-mono" style={{ color: "var(--text-secondary)" }}>
+                <span className="label block mb-1.5">Timestamp</span>
+                <span className="type-mono" style={{ color: "var(--text-secondary)" }}>
                   {receipt.timestamp ? formatDate(receipt.timestamp) : "—"}
                 </span>
               </div>
-            </div>
 
-            {/* Signature hash */}
-            {receipt.signature_hash && (
-              <div
-                className="rounded-xl p-4 mt-2"
-                style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-default)" }}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <span className="label block mb-1">Signature Hash</span>
-                    <span className="font-mono text-xs break-all" style={{ color: "var(--text-secondary)" }}>
-                      {receipt.signature_hash}
-                    </span>
+              {/* Signature hash */}
+              {receipt.signature_hash && (
+                <div
+                  style={{
+                    background: "var(--bg-elevated)",
+                    border: "1px solid var(--border-default)",
+                    borderRadius: "8px",
+                    padding: "14px 16px",
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <span className="label block mb-1.5">Signature Hash</span>
+                      <span className="type-mono break-all" style={{ color: "var(--text-secondary)" }}>
+                        {receipt.signature_hash}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleCopy(receipt.signature_hash)}
+                      aria-label={copied ? "Signature hash copied to clipboard" : "Copy signature hash to clipboard"}
+                      className="flex-shrink-0 p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                      style={{
+                        background: copied ? "var(--risk-low-bg)" : "var(--bg-overlay)",
+                        border: `1px solid ${copied ? "var(--risk-low-border)" : "var(--border-default)"}`,
+                        color: copied ? "var(--risk-low)" : "var(--text-secondary)",
+                        cursor: "pointer",
+                      }}
+                      title="Copy hash"
+                    >
+                      {copied ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleCopy(receipt.signature_hash)}
-                    aria-label={copied ? "Signature hash copied to clipboard" : "Copy signature hash to clipboard"}
-                    className="flex-shrink-0 p-2.5 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
-                    style={{
-                      background: copied ? "var(--risk-low-bg)" : "var(--bg-overlay)",
-                      border: `1px solid ${copied ? "var(--risk-low-border)" : "var(--border-default)"}`,
-                      color: copied ? "var(--risk-low)" : "var(--text-secondary)",
-                    }}
-                    title="Copy hash"
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
-                  </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
-        {/* Key metadata */}
+        {/* ── Signing key ──────────────────────────────────────────── */}
         <div
-          className="rounded-2xl p-6"
-          style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}
+          style={{
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "12px",
+            overflow: "hidden",
+          }}
         >
-          <h2 className="type-section-title mb-4" style={{ color: "var(--text-primary)" }}>Signing Key</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <span className="label block mb-1">Algorithm</span>
-              <span className="font-mono text-xs" style={{ color: "var(--text-secondary)" }}>
-                {verifyKey?.algorithm ?? "Ed25519"}
-              </span>
-            </div>
-            <div>
-              <span className="label block mb-1">Key ID</span>
-              <span className="font-mono text-xs break-all" style={{ color: "var(--text-secondary)" }}>
-                {verifyKey?.key_id ?? (receipt ? verifyResult?.receipt_id ?? "—" : "—")}
-              </span>
-            </div>
-            <div>
-              <span className="label block mb-1">Signature Algorithm</span>
-              <span className="font-mono text-xs" style={{ color: "var(--accent-primary)" }}>
-                Ed25519
-              </span>
-            </div>
+          {/* Section header */}
+          <div
+            className="px-6 py-4 flex items-center gap-3"
+            style={{ borderBottom: "1px solid var(--border-subtle)" }}
+          >
+            <h2 className="type-section-title" style={{ color: "var(--text-primary)" }}>Signing Key</h2>
+            {/* Crypto algorithm badge */}
+            <span
+              className="type-micro"
+              style={{
+                color: "var(--accent-primary)",
+                background: "var(--accent-primary-bg)",
+                border: "1px solid var(--accent-primary-border)",
+                borderRadius: "4px",
+                padding: "2px 7px",
+                letterSpacing: "0.07em",
+              }}
+            >
+              Ed25519
+            </span>
           </div>
-          {verifyKey?.public_key && (
-            <div className="mt-4">
-              <span className="label block mb-1">Public Key</span>
-              <div
-                className="rounded-lg px-3 py-2 font-mono text-xs break-all"
-                style={{
-                  background: "var(--bg-elevated)",
-                  border: "1px solid var(--border-default)",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                {verifyKey.public_key}
+
+          <div className="px-6 py-5 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div>
+                <span className="label block mb-1.5">Algorithm</span>
+                <span className="type-mono" style={{ color: "var(--text-secondary)" }}>
+                  {verifyKey?.algorithm ?? "Ed25519"}
+                </span>
+              </div>
+              <div>
+                <span className="label block mb-1.5">Key ID</span>
+                <span className="type-mono break-all" style={{ color: "var(--text-secondary)" }}>
+                  {verifyKey?.key_id ?? (receipt ? verifyResult?.receipt_id ?? "—" : "—")}
+                </span>
+              </div>
+              <div>
+                <span className="label block mb-1.5">Signature Algorithm</span>
+                <span className="type-mono" style={{ color: "var(--accent-primary)" }}>
+                  Ed25519
+                </span>
               </div>
             </div>
-          )}
-          {verifyKey?.created_at && (
-            <div className="mt-3">
-              <span className="label block mb-1">Key Created</span>
-              <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
-                {formatDate(verifyKey.created_at)}
-              </span>
-            </div>
-          )}
+
+            {verifyKey?.public_key && (
+              <div>
+                <span className="label block mb-1.5">Public Key</span>
+                <div
+                  style={{
+                    background: "var(--bg-elevated)",
+                    border: "1px solid var(--border-default)",
+                    borderLeft: "3px solid var(--accent-primary-border)",
+                    borderRadius: "8px",
+                    padding: "10px 14px",
+                  }}
+                >
+                  <span className="type-mono break-all" style={{ color: "var(--text-secondary)" }}>
+                    {verifyKey.public_key}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {verifyKey?.created_at && (
+              <div>
+                <span className="label block mb-1.5">Key Created</span>
+                <span className="type-mono" style={{ color: "var(--text-muted)" }}>
+                  {formatDate(verifyKey.created_at)}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs pb-4" style={{ color: "var(--text-muted)" }}>
+        <p className="text-center type-caption pb-4" style={{ color: "var(--text-muted)" }}>
           Sovereign — patient-owned proof. This receipt is cryptographically signed and independently verifiable.
         </p>
       </div>

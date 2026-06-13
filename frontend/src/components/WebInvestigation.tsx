@@ -81,15 +81,9 @@ function statusTextClass(status: SignalStatus): string {
   }
 }
 
-function cardBorderClass(status: SignalStatus): string {
-  switch (status) {
-    case "verified":
-      return "border-l-[3px] border-l-[var(--risk-low)]";
-    case "risk":
-      return "border-l-[3px] border-l-[var(--accent-primary)]";
-    case "pending":
-      return "border-l-[3px] border-l-[var(--text-muted)]";
-  }
+// No thick left-border — status signaled via dot + text only
+function cardBorderClass(_status: SignalStatus): string {
+  return "";
 }
 
 function confidenceBarBg(status: SignalStatus): string {
@@ -172,7 +166,17 @@ export default function WebInvestigation({ signals }: WebInvestigationProps) {
           return (
             <div
               key={config.key}
-              className={`rounded-xl p-4 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] ${cardBorderClass(status)} transition-all duration-200 hover:border-[var(--border-default)]`}
+              className="rounded-xl p-4 transition-colors duration-[180ms]"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-subtle)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-default)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-subtle)";
+              }}
             >
               {/* Header row: icon + title + status */}
               <div className="flex items-start justify-between gap-3 mb-3">

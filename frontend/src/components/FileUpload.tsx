@@ -93,65 +93,89 @@ export default function FileUpload({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // ── Selected state ───────────────────────────
   if (selectedFile) {
     return (
       <div
-        className="rounded-xl p-4"
+        className="rounded-xl p-4 animate-fade-in"
         style={{
-          background: "var(--bg-elevated)",
+          background: "var(--bg-surface)",
           border: "1px solid var(--border-default)",
         }}
       >
         <div className="flex items-start gap-4">
-          {/* Preview */}
+          {/* Preview thumbnail or file icon */}
           {previewUrl ? (
             <div
-              className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0"
-              style={{ background: "var(--bg-base)" }}
+              className="relative w-[72px] h-[72px] rounded-lg overflow-hidden flex-shrink-0"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-subtle)",
+              }}
             >
               <Image
                 src={previewUrl}
                 alt="Preview"
                 fill
                 unoptimized
-                sizes="80px"
+                sizes="72px"
                 className="object-cover"
               />
             </div>
           ) : (
             <div
-              className="w-20 h-20 rounded-xl flex-shrink-0 flex items-center justify-center"
-              style={{ background: "var(--bg-base)" }}
+              className="w-[72px] h-[72px] rounded-lg flex-shrink-0 flex items-center justify-center"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-subtle)",
+              }}
             >
               <File
-                className="w-8 h-8"
+                className="w-7 h-7"
                 style={{ color: "var(--text-muted)" }}
+                aria-hidden="true"
               />
             </div>
           )}
 
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
+          {/* File metadata */}
+          <div className="flex-1 min-w-0 pt-0.5">
+            <p
+              className="type-body-strong truncate"
+              style={{ color: "var(--text-primary)" }}
+              title={selectedFile.name}
+            >
               {selectedFile.name}
             </p>
-            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-              {formatFileSize(selectedFile.size)} &middot;{" "}
-              {selectedFile.type || "Unknown type"}
+            <p
+              className="type-caption mt-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {formatFileSize(selectedFile.size)}
+              {selectedFile.type ? ` · ${selectedFile.type.split("/")[1]?.toUpperCase() ?? selectedFile.type}` : ""}
             </p>
-            <div className="flex items-center gap-1 mt-2 text-xs" style={{ color: "var(--risk-low)" }}>
-              <Check className="w-3.5 h-3.5" />
-              Ready to upload
+            <div
+              className="flex items-center gap-1.5 mt-2.5"
+              style={{ color: "var(--risk-low)" }}
+            >
+              <Check className="w-3.5 h-3.5" aria-hidden="true" />
+              <span className="type-caption" style={{ color: "var(--risk-low)" }}>
+                Ready to submit
+              </span>
             </div>
           </div>
 
-          {/* Remove */}
+          {/* Remove button */}
           <button
             type="button"
             onClick={handleRemove}
             aria-label="Remove selected file"
-            className="flex-shrink-0 p-2 rounded-lg transition-colors hover:opacity-75 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            style={{ color: "var(--text-secondary)" }}
+            className="flex-shrink-0 rounded-lg flex items-center justify-center transition-colors hover:opacity-70 focus-ring"
+            style={{
+              color: "var(--text-muted)",
+              minWidth: 44,
+              minHeight: 44,
+            }}
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
@@ -160,18 +184,29 @@ export default function FileUpload({
     );
   }
 
+  // ── Drop zone (no file selected) ─────────────
   return (
     <div
+      role="button"
+      tabIndex={0}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
-      className="relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          inputRef.current?.click();
+        }
+      }}
+      className="relative border-2 border-dashed rounded-xl cursor-pointer transition-all focus-ring"
       style={{
         borderColor: isDragging ? "var(--accent-primary)" : "var(--border-default)",
-        background: isDragging ? "var(--accent-primary-bg)" : "transparent",
-        boxShadow: isDragging ? "0 0 20px var(--accent-primary-border)" : "none",
+        background: isDragging ? "var(--accent-primary-bg)" : "var(--bg-surface)",
+        boxShadow: isDragging ? "0 0 0 4px var(--accent-primary-border)" : "none",
+        padding: "2.5rem 2rem",
       }}
+      aria-label="Upload medical bill or supporting document (image or PDF, up to 10 MB)"
     >
       <input
         ref={inputRef}
@@ -180,18 +215,36 @@ export default function FileUpload({
         accept="image/*,.pdf"
         aria-label="Upload medical bill or supporting document (image or PDF, up to 10 MB)"
         className="hidden"
+        tabIndex={-1}
       />
-      <Upload
-        className="w-10 h-10 mx-auto mb-3"
-        style={{ color: isDragging ? "var(--accent-primary)" : "var(--text-muted)" }}
-      />
-      <p className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>
-        <span className="font-medium" style={{ color: "var(--accent-primary)" }}>Click to upload</span> or
-        drag and drop
-      </p>
-      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-        Images (PNG, JPG, WEBP) or PDF &mdash; up to 10MB
-      </p>
+
+      <div className="flex flex-col items-center gap-3 text-center">
+        {/* Icon */}
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors"
+          style={{
+            background: isDragging ? "var(--accent-primary-bg)" : "var(--bg-elevated)",
+            border: `1px solid ${isDragging ? "var(--accent-primary-border)" : "var(--border-default)"}`,
+          }}
+          aria-hidden="true"
+        >
+          <Upload
+            className="w-5 h-5 transition-colors"
+            style={{ color: isDragging ? "var(--accent-primary)" : "var(--text-secondary)" }}
+          />
+        </div>
+
+        {/* Primary line */}
+        <div>
+          <p className="type-body-strong" style={{ color: "var(--text-primary)" }}>
+            <span style={{ color: "var(--accent-primary)" }}>Click to upload</span>
+            {" "}or drag and drop
+          </p>
+          <p className="type-caption mt-1" style={{ color: "var(--text-muted)" }}>
+            PDF, PNG, JPG, WEBP — up to 10 MB
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

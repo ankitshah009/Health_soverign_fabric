@@ -630,20 +630,21 @@ export default function RiskTimeline({ claimId, status }: RiskTimelineProps) {
             className="type-section-title"
             style={{ color: "var(--text-primary)" }}
           >
-            Risk Timeline
+            Review Timeline
           </h3>
         </div>
         <div className="flex items-center gap-3">
           {peakScore !== null && (
             <span
-              className="text-xs font-semibold px-2.5 py-1 rounded-full"
+              className="text-xs font-semibold px-2.5 py-1 rounded-full tabular-nums"
               style={{
                 color: peakColor,
                 background: getRiskBg(peakScore),
                 border: `1px solid ${getRiskBorder(peakScore)}`,
+                fontVariantNumeric: "tabular-nums",
               }}
             >
-              Peak risk: {peakScore}/100
+              Peak severity: {peakScore}/100
             </span>
           )}
           {isProcessing && (

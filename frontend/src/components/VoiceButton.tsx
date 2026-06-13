@@ -5,7 +5,7 @@ import { Mic, Square, Loader2 } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-type VoiceState = "idle" | "connecting" | "listening" | "speaking";
+type VoiceState = "idle" | "connecting" | "listening" | "thinking" | "speaking";
 
 // AudioWorklet processor source as a blob URL
 function createWorkletBlobUrl(): string {
@@ -76,6 +76,15 @@ function base64ToFloat32Pcm(base64: string): Float32Array {
 interface VoiceButtonProps {
   autoStart?: boolean;
 }
+
+// State metadata: label, color, icon context
+const STATE_META: Record<VoiceState, { label: string; color: string }> = {
+  idle:       { label: "Tap to speak",     color: "var(--text-muted)" },
+  connecting: { label: "Connecting…",      color: "var(--text-secondary)" },
+  listening:  { label: "Listening",        color: "var(--accent-primary)" },
+  thinking:   { label: "Thinking",         color: "var(--accent-primary)" },
+  speaking:   { label: "Speaking",         color: "var(--risk-low)" },
+};
 
 export default function VoiceButton({ autoStart = false }: VoiceButtonProps) {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
@@ -305,55 +314,91 @@ export default function VoiceButton({ autoStart = false }: VoiceButtonProps) {
     }
   }, [autoStart, voiceState, handleToggle]);
 
-  const buttonBackground =
-    voiceState === "idle"
-      ? "var(--bg-surface)"
-      : voiceState === "connecting"
-      ? "var(--bg-elevated)"
-      : voiceState === "listening"
-      ? "var(--accent-primary)"
-      : "var(--risk-low)";
-
-  const buttonBorder =
-    voiceState === "idle"
-      ? "var(--accent-primary)"
-      : voiceState === "connecting"
-      ? "var(--accent-primary)"
-      : voiceState === "listening"
-      ? "var(--accent-primary)"
-      : "var(--risk-low)";
-
-  const showPulse = voiceState === "listening" || voiceState === "speaking";
+  const isActive = voiceState !== "idle";
+  const isListening = voiceState === "listening";
+  const isSpeaking = voiceState === "speaking";
+  const isConnecting = voiceState === "connecting";
+  const showPulse = isListening || isSpeaking;
+  const meta = STATE_META[voiceState];
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {/* Pulse ring container */}
-      <div className="relative flex items-center justify-center">
+    <div className="flex flex-col items-center gap-5">
+      {/*
+        Keyframes injected here so they live alongside the component
+        and are gated with @media (prefers-reduced-motion: no-preference).
+        The globals.css reduced-motion block also catches them as a fallback.
+      */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          @keyframes voicePulse {
+            0%   { transform: scale(1);   opacity: 0.55; }
+            100% { transform: scale(1.9); opacity: 0; }
+          }
+          @keyframes voicePulse2 {
+            0%   { transform: scale(1);   opacity: 0.30; }
+            100% { transform: scale(2.4); opacity: 0; }
+          }
+          @keyframes voiceBlink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0; }
+          }
+        }
+      `}</style>
+
+      {/* ── Button + concentric pulse rings ─────── */}
+      <div className="relative flex items-center justify-center" style={{ width: 80, height: 80 }}>
+        {/* Outer slow ring — only when listening/speaking */}
         {showPulse && (
-          <div
-            className="absolute inset-0 rounded-full"
+          <span
+            aria-hidden="true"
             style={{
-              border: `2px solid ${voiceState === "listening" ? "var(--accent-primary)" : "var(--risk-low)"}`,
-              animation: "voicePulse 1.5s ease-out infinite",
-              width: "64px",
-              height: "64px",
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              border: `1.5px solid ${isListening ? "var(--accent-primary)" : "var(--risk-low)"}`,
+              animation: "voicePulse2 2.2s cubic-bezier(0.4,0,0.6,1) infinite 0.6s",
             }}
           />
         )}
-        <style>{`
-          @keyframes voicePulse {
-            0% { transform: scale(1); opacity: 0.6; }
-            100% { transform: scale(1.6); opacity: 0; }
-          }
-        `}</style>
+        {/* Inner fast ring */}
+        {showPulse && (
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              border: `2px solid ${isListening ? "var(--accent-primary)" : "var(--risk-low)"}`,
+              animation: "voicePulse 1.8s cubic-bezier(0.4,0,0.6,1) infinite",
+            }}
+          />
+        )}
 
+        {/* Core button */}
         <button
           onClick={handleToggle}
-          className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 z-10"
+          className="relative z-10 flex items-center justify-center btn-press focus-ring"
           style={{
-            background: buttonBackground,
-            border: `2px solid ${buttonBorder}`,
+            width: 80,
+            height: 80,
+            borderRadius: "50%",
+            background: isActive
+              ? isListening
+                ? "var(--accent-primary)"
+                : isSpeaking
+                ? "rgba(34,197,94,0.15)"
+                : "var(--bg-elevated)"
+              : "var(--bg-surface)",
+            border: isActive
+              ? `2px solid ${isListening ? "var(--accent-primary)" : isSpeaking ? "var(--risk-low)" : "var(--border-strong)"}`
+              : "2px solid var(--border-default)",
+            boxShadow: isListening
+              ? "0 0 0 4px rgba(245,166,35,0.14), 0 4px 20px rgba(245,166,35,0.22)"
+              : isSpeaking
+              ? "0 0 0 4px rgba(34,197,94,0.12), 0 4px 20px rgba(34,197,94,0.16)"
+              : "0 2px 12px rgba(0,0,0,0.3)",
             cursor: "pointer",
+            transition: "background 0.2s ease, border-color 0.2s ease, box-shadow 0.3s ease",
           }}
           aria-label={
             voiceState === "idle"
@@ -364,80 +409,90 @@ export default function VoiceButton({ autoStart = false }: VoiceButtonProps) {
               ? "Stop voice conversation (currently listening)"
               : "Stop voice conversation (Sovereign is speaking)"
           }
-          aria-pressed={voiceState !== "idle"}
-          title={
-            voiceState === "idle"
-              ? "Start voice conversation"
-              : "Stop voice conversation"
-          }
+          aria-pressed={isActive}
+          title={isActive ? "Stop voice conversation" : "Start voice conversation"}
         >
-          {voiceState === "connecting" ? (
+          {isConnecting ? (
             <Loader2
-              className="w-6 h-6 animate-spin"
+              className="w-7 h-7 animate-spin"
               style={{ color: "var(--accent-primary)" }}
               aria-hidden="true"
             />
-          ) : voiceState === "idle" ? (
-            <Mic
+          ) : isActive ? (
+            /* Stop affordance — filled square, always clear */
+            <Square
               className="w-6 h-6"
-              style={{ color: "var(--accent-primary)" }}
+              style={{
+                color: isListening ? "var(--bg-base)" : "var(--text-primary)",
+                fill: isListening ? "var(--bg-base)" : "none",
+              }}
               aria-hidden="true"
             />
           ) : (
-            <Square
-              className="w-6 h-6"
-              style={{ color: "var(--text-primary)" }}
+            <Mic
+              className="w-7 h-7"
+              style={{ color: "var(--accent-primary)" }}
               aria-hidden="true"
             />
           )}
         </button>
       </div>
 
-      {/* State label */}
-      <span
-        className="text-xs font-medium"
-        style={{
-          color:
-            voiceState === "listening"
-              ? "var(--accent-primary)"
-              : voiceState === "speaking"
-              ? "var(--risk-low)"
-              : voiceState === "connecting"
-              ? "var(--text-secondary)"
-              : "var(--text-muted)",
-        }}
-      >
-        {voiceState === "idle" && "Voice"}
-        {voiceState === "connecting" && "Connecting..."}
-        {voiceState === "listening" && "Listening..."}
-        {voiceState === "speaking" && "Speaking..."}
-      </span>
+      {/* ── State label + sub-copy ───────────────── */}
+      <div className="text-center space-y-1" style={{ minHeight: "2.5rem" }}>
+        <p
+          className="type-subtitle"
+          style={{
+            color: meta.color,
+            transition: "color 0.2s ease",
+          }}
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {meta.label}
+        </p>
+        {voiceState === "idle" && (
+          <p className="type-caption" style={{ color: "var(--text-muted)" }}>
+            Tell me what happened with your bill
+          </p>
+        )}
+        {isConnecting && (
+          <p className="type-caption" style={{ color: "var(--text-muted)" }}>
+            Establishing secure connection…
+          </p>
+        )}
+      </div>
 
-      {/* Transcript */}
+      {/* ── Live transcript ──────────────────────── */}
       {transcript && (
         <div
-          className="text-sm text-center max-w-full px-3 py-2 rounded-lg animate-fade-in"
+          className="animate-fade-in w-full px-4 py-3 rounded-xl"
           style={{
             color: "var(--text-secondary)",
             background: "var(--bg-surface)",
             border: "1px solid var(--border-subtle)",
-            maxHeight: "80px",
+            fontSize: "0.8125rem",
+            lineHeight: 1.55,
+            maxHeight: 96,
             overflowY: "auto",
           }}
+          aria-live="polite"
         >
           {transcript}
         </div>
       )}
 
-      {/* Error */}
+      {/* ── Error ───────────────────────────────── */}
       {errorMsg && (
         <div
-          className="text-xs text-center px-3 py-1.5 rounded-lg"
+          className="animate-fade-in w-full px-3 py-2.5 rounded-xl"
           style={{
             color: "var(--risk-critical)",
             background: "var(--risk-critical-bg)",
             border: "1px solid var(--risk-critical-border)",
+            fontSize: "0.8125rem",
           }}
+          role="alert"
         >
           {errorMsg}
         </div>

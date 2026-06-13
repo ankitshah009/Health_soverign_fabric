@@ -8,7 +8,6 @@ import { ClaimData } from "@/lib/types";
 import {
   cn,
   getRiskColor,
-  getRiskCardClass,
   getRelativeTime,
   getAgeColor,
   formatCurrency,
@@ -216,11 +215,11 @@ export default function AllClaimsPage() {
           style={{ borderBottom: "1px solid var(--border-subtle)" }}
         >
           <span className="label">Case</span>
-          <span className="label w-24 text-center">Status</span>
-          <span className="label w-16 text-right">Error Score</span>
-          <span className="label w-20 text-right">Recoverable</span>
+          <span className="label w-28 text-center">Status</span>
+          <span className="label w-20 text-right">Error Score</span>
+          <span className="label w-24 text-right">Recoverable</span>
           <span className="label w-24 text-right">Date</span>
-          <span className="label w-12 text-right">Action</span>
+          <span className="label w-8 text-right sr-only">View</span>
         </div>
 
         {/* Loading skeletons */}
@@ -238,7 +237,6 @@ export default function AllClaimsPage() {
             {filtered.map((claim) => {
               const fraudScore = getNumericFraudScore(claim.fraud_score);
               const fraudColor = getRiskColor(fraudScore);
-              const riskClass = getRiskCardClass(fraudScore);
               const amount = claim.payout_recommendation?.recommended_amount;
               const relativeTime = getRelativeTime(new Date(claim.created_at));
               const ageColor = getAgeColor(claim.created_at);
@@ -247,14 +245,11 @@ export default function AllClaimsPage() {
                 <Link
                   key={claim.id}
                   href={`/claims/${claim.id}`}
-                  className="block transition-all duration-150 hover:bg-[var(--bg-elevated)]"
+                  className="block transition-colors duration-150 hover:bg-[var(--bg-elevated)]"
                   data-testid={`claim-row-${claim.id}`}
                 >
                   <div
-                    className={cn(
-                      "grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-3 md:gap-4 px-5 py-4",
-                      riskClass
-                    )}
+                    className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-3 md:gap-4 px-5 py-4"
                     style={{
                       borderBottom: "1px solid var(--border-subtle)",
                     }}
@@ -288,27 +283,35 @@ export default function AllClaimsPage() {
                     </div>
 
                     {/* Status */}
-                    <div className="w-24 flex justify-center">
+                    <div className="w-28 flex justify-center">
                       <StatusBadge status={claim.status} size="sm" />
                     </div>
 
                     {/* Fraud score */}
-                    <div className="w-16 text-right">
+                    <div className="w-20 text-right">
                       <span
-                        className="font-bold text-sm stat-value"
-                        style={{ color: fraudColor }}
+                        className="font-bold text-sm tabular-nums"
+                        style={{
+                          color: fraudColor,
+                          fontVariantNumeric: "tabular-nums",
+                        }}
                       >
                         {fraudScore !== null && fraudScore !== undefined
                           ? Math.round(fraudScore)
-                          : "--"}
+                          : <span style={{ color: "var(--text-muted)" }}>—</span>}
                       </span>
                     </div>
 
                     {/* Amount */}
-                    <div className="w-20 text-right">
+                    <div className="w-24 text-right">
                       <span
-                        className="text-sm font-medium"
-                        style={{ color: "var(--text-primary)" }}
+                        className="text-sm font-semibold tabular-nums"
+                        style={{
+                          color: amount !== undefined && amount !== null
+                            ? "var(--accent-primary)"
+                            : "var(--text-muted)",
+                          fontVariantNumeric: "tabular-nums",
+                        }}
                       >
                         {formatCurrency(amount)}
                       </span>
@@ -316,7 +319,7 @@ export default function AllClaimsPage() {
 
                     {/* Date with age color */}
                     <div className="w-24 flex items-center justify-end gap-1.5">
-                      <Clock className="w-3 h-3" style={{ color: ageColor }} />
+                      <Clock className="w-3 h-3 flex-shrink-0" style={{ color: ageColor }} aria-hidden="true" />
                       <span
                         className="text-xs font-medium"
                         style={{ color: ageColor }}
@@ -326,10 +329,11 @@ export default function AllClaimsPage() {
                     </div>
 
                     {/* Action arrow */}
-                    <div className="w-12 flex justify-end">
+                    <div className="w-8 flex justify-end">
                       <ArrowRight
-                        className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                        style={{ color: "var(--accent-primary)" }}
+                        className="w-4 h-4 transition-transform duration-200"
+                        style={{ color: "var(--text-muted)" }}
+                        aria-hidden="true"
                       />
                     </div>
                   </div>

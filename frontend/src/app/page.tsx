@@ -67,39 +67,99 @@ interface SummaryStats {
   pending: number;
   approved: number;
   flagged: number;
+  recoverable: number;
 }
 
-/* ── Stat card ──────────────────────────────────── */
+/* ── Animated currency counter ─────────────────── */
+function useAnimatedCurrency(target: number, duration: number = 700): number {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    const safe = Number.isFinite(target) ? target : 0;
+    if (safe === 0) { setVal(0); return; }
+    let id = 0;
+    const start = performance.now();
+    function tick(now: number) {
+      const p = Math.min((now - start) / duration, 1);
+      const e = 1 - Math.pow(1 - p, 3);
+      setVal(Math.round(e * safe));
+      if (p < 1) id = requestAnimationFrame(tick);
+    }
+    id = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(id);
+  }, [target, duration]);
+  return val;
+}
+
+/* ── Hero stat (large recoverable figure) ──────── */
+function HeroStat({ value }: { value: number }) {
+  const animated = useAnimatedCurrency(value);
+  const formatted = animated >= 1000
+    ? `$${(animated / 1000).toFixed(1)}K`
+    : `$${animated}`;
+  return (
+    <div
+      className="rounded-xl p-6 flex flex-col justify-between"
+      style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        gridColumn: "span 2",
+      }}
+      data-testid="stat-recoverable"
+    >
+      <p
+        className="text-xs font-semibold uppercase tracking-widest mb-3"
+        style={{ color: "var(--text-muted)" }}
+      >
+        Total Recoverable
+      </p>
+      <p
+        className="text-5xl font-bold tabular-nums leading-none"
+        style={{ color: "var(--accent-primary)", fontVariantNumeric: "tabular-nums" }}
+      >
+        {formatted}
+      </p>
+      <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+        estimated across all flagged cases
+      </p>
+    </div>
+  );
+}
+
+/* ── Supporting stat card ───────────────────────── */
 interface StatCardProps {
   label: string;
   value: number;
   icon: React.ReactNode;
   iconColor: string;
-  iconBg: string;
 }
 
-function StatCard({ label, value, icon, iconColor, iconBg }: StatCardProps) {
+function StatCard({ label, value, icon, iconColor }: StatCardProps) {
   const animatedValue = useAnimatedCounter(value);
 
   return (
-    <div className="card p-5 group" data-testid={`stat-${label.toLowerCase().replace(/\s+/g, "-")}`}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="label">{label}</p>
-          <p
-            className="text-3xl type-stat"
-            style={{ color: iconColor }}
-          >
-            {animatedValue}
-          </p>
-        </div>
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
-          style={{ backgroundColor: iconBg }}
+    <div
+      className="rounded-xl p-5 flex flex-col justify-between"
+      style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+      }}
+      data-testid={`stat-${label.toLowerCase().replace(/\s+/g, "-")}`}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <p
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: "var(--text-muted)" }}
         >
-          {icon}
-        </div>
+          {label}
+        </p>
+        <span aria-hidden="true" style={{ color: iconColor }}>{icon}</span>
       </div>
+      <p
+        className="text-3xl font-bold tabular-nums leading-none"
+        style={{ color: iconColor, fontVariantNumeric: "tabular-nums" }}
+      >
+        {animatedValue}
+      </p>
     </div>
   );
 }
@@ -223,6 +283,10 @@ export default function DashboardPage() {
         return score !== null && score >= 60;
       }
     ).length,
+    recoverable: claims.reduce((sum, c) => {
+      const amt = c.payout_recommendation?.recommended_amount;
+      return sum + (typeof amt === "number" && isFinite(amt) ? amt : 0);
+    }, 0),
   };
 
   const needsAttention = claims.filter(
@@ -246,10 +310,18 @@ export default function DashboardPage() {
       {/* ── Header ─────────────────────────────── */}
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap" data-testid="dashboard-header">
         <div>
+          <p
+            className="text-xs font-semibold uppercase tracking-widest mb-1.5"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {loading ? "\u00A0" : getGreeting()}
+          </p>
           <h1 className="type-page-title mb-1" style={{ color: "var(--text-primary)" }}>
             {loading
-              ? "Loading dashboard..."
-              : `${getGreeting()} \u2014 ${attentionCount > 0 ? `${attentionCount} case${attentionCount !== 1 ? "s" : ""} need${attentionCount === 1 ? "s" : ""} your attention` : "all clear for now"}`}
+              ? "Loading dashboard\u2026"
+              : attentionCount > 0
+                ? `${attentionCount} case${attentionCount !== 1 ? "s" : ""} need${attentionCount === 1 ? "s" : ""} attention`
+                : "All cases clear"}
           </h1>
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Your AI patient advocate — with a provable conscience.
@@ -262,41 +334,40 @@ export default function DashboardPage() {
 
       {/* ── Summary stat cards ─────────────────── */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-children">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="col-span-2 h-36 skeleton rounded-xl" />
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-children">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-children">
+          {/* Hero: total recoverable spans 2 columns on all breakpoints */}
+          <HeroStat value={stats.recoverable} />
           <StatCard
             label="Total Cases"
             value={stats.total}
             iconColor="var(--accent-primary)"
-            iconBg="var(--accent-primary-bg)"
-            icon={<FileText className="w-5 h-5" style={{ color: "var(--accent-primary)" }} />}
+            icon={<FileText className="w-4 h-4" />}
           />
           <StatCard
             label="Pending Review"
             value={stats.pending}
             iconColor="var(--risk-medium)"
-            iconBg="var(--risk-medium-bg)"
-            icon={<Clock className="w-5 h-5" style={{ color: "var(--risk-medium)" }} />}
+            icon={<Clock className="w-4 h-4" />}
           />
           <StatCard
             label="Approved"
             value={stats.approved}
             iconColor="var(--risk-low)"
-            iconBg="var(--risk-low-bg)"
-            icon={<CheckCircle2 className="w-5 h-5" style={{ color: "var(--risk-low)" }} />}
+            icon={<CheckCircle2 className="w-4 h-4" />}
           />
           <StatCard
             label="Overcharge Flagged"
             value={stats.flagged}
             iconColor="var(--risk-critical)"
-            iconBg="var(--risk-critical-bg)"
-            icon={<AlertTriangle className="w-5 h-5" style={{ color: "var(--risk-critical)" }} />}
+            icon={<AlertTriangle className="w-4 h-4" />}
           />
         </div>
       )}

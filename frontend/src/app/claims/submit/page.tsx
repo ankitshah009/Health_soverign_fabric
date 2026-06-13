@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitClaim } from "@/lib/api";
 import FileUpload from "@/components/FileUpload";
-import { Shield, Loader2 } from "lucide-react";
+import { Shield, Loader2, ArrowRight } from "lucide-react";
 
 export default function SubmitClaimPage() {
   const router = useRouter();
@@ -48,65 +48,100 @@ export default function SubmitClaimPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
+    <div
+      className="max-w-xl mx-auto px-0 py-2"
+      style={{ paddingBottom: "4rem" }}
+    >
+      {/* ── Page header ───────────────────────── */}
+      <div className="mb-10">
+        <p
+          className="type-overline mb-3"
+          style={{ color: "var(--accent-primary)" }}
+        >
+          New case
+        </p>
         <h1
-          className="type-page-title mb-1"
+          className="type-page-title mb-3"
           style={{ color: "var(--text-primary)" }}
         >
-          Start a New Case
+          Start a Review
         </h1>
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Upload your medical bill or denial letter — Sovereign reads it with Grok Vision and hunts for overcharges, billing errors, and appealable denials.
+        <p className="type-body" style={{ color: "var(--text-secondary)" }}>
+          Upload your medical bill or denial letter. Sovereign uses Grok Vision to find
+          overcharges, billing errors, and appealable denials automatically.
         </p>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} aria-label="Submit a new medical billing case" className="space-y-6">
-        {/* File upload */}
-        <div>
-          <label
-            className="block text-sm font-medium mb-2"
-            style={{ color: "var(--text-primary)" }}
+      {/* ── Form ──────────────────────────────── */}
+      <form
+        onSubmit={handleSubmit}
+        aria-label="Submit a new medical billing case"
+        className="flex flex-col gap-7"
+        noValidate
+      >
+        {/* Supporting document */}
+        <fieldset className="border-0 p-0 m-0">
+          <legend
+            className="type-caption font-semibold mb-2 block"
+            style={{ color: "var(--text-secondary)", letterSpacing: "0.04em" }}
           >
-            Supporting Document <span style={{ color: "var(--risk-critical)" }}>*</span>
-          </label>
+            Supporting document
+            <span
+              aria-hidden="true"
+              style={{ color: "var(--risk-critical)", marginLeft: 4 }}
+            >
+              *
+            </span>
+          </legend>
           <FileUpload
             onFileSelect={setFile}
             selectedFile={file}
             onRemove={() => setFile(null)}
           />
-        </div>
+        </fieldset>
 
         {/* Patient name */}
-        <div>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="claimantName"
-            className="block text-sm font-medium mb-2"
-            style={{ color: "var(--text-primary)" }}
+            className="type-caption font-semibold"
+            style={{ color: "var(--text-secondary)", letterSpacing: "0.04em" }}
           >
-            Patient Name <span style={{ color: "var(--risk-critical)" }}>*</span>
+            Patient name
+            <span
+              aria-hidden="true"
+              style={{ color: "var(--risk-critical)", marginLeft: 4 }}
+            >
+              *
+            </span>
           </label>
           <input
             id="claimantName"
             type="text"
             value={claimantName}
             onChange={(e) => setClaimantName(e.target.value)}
-            placeholder="Enter full name"
-            className="w-full rounded-lg px-4 py-2.5 text-sm input-recessed focus:outline-none"
+            placeholder="Full name as it appears on the bill"
+            autoComplete="name"
+            required
+            className="w-full rounded-xl px-4 py-3 text-sm input-recessed focus:outline-none"
             style={{ color: "var(--text-primary)" }}
           />
         </div>
 
         {/* Policy number */}
-        <div>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="policyNumber"
-            className="block text-sm font-medium mb-2"
-            style={{ color: "var(--text-primary)" }}
+            className="type-caption font-semibold"
+            style={{ color: "var(--text-secondary)", letterSpacing: "0.04em" }}
           >
-            Policy Number <span style={{ color: "var(--risk-critical)" }}>*</span>
+            Policy number
+            <span
+              aria-hidden="true"
+              style={{ color: "var(--risk-critical)", marginLeft: 4 }}
+            >
+              *
+            </span>
           </label>
           <input
             id="policyNumber"
@@ -114,68 +149,118 @@ export default function SubmitClaimPage() {
             value={policyNumber}
             onChange={(e) => setPolicyNumber(e.target.value)}
             placeholder="e.g., POL-2024-001234"
-            className="w-full rounded-lg px-4 py-2.5 text-sm input-recessed focus:outline-none"
-            style={{ color: "var(--text-primary)" }}
+            autoComplete="off"
+            required
+            className="w-full rounded-xl px-4 py-3 text-sm input-recessed focus:outline-none"
+            style={{ color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}
           />
         </div>
 
-        {/* Issue description */}
-        <div>
+        {/* Incident description */}
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="incidentDescription"
-            className="block text-sm font-medium mb-2"
-            style={{ color: "var(--text-primary)" }}
+            className="type-caption font-semibold"
+            style={{ color: "var(--text-secondary)", letterSpacing: "0.04em" }}
           >
-            Issue Description <span style={{ color: "var(--risk-critical)" }}>*</span>
+            Describe the issue
+            <span
+              aria-hidden="true"
+              style={{ color: "var(--risk-critical)", marginLeft: 4 }}
+            >
+              *
+            </span>
           </label>
+          <p
+            className="type-caption"
+            style={{ color: "var(--text-muted)", marginTop: -4 }}
+          >
+            Unexpected charge, denied service, balance-billing concern — in your own words.
+          </p>
           <textarea
             id="incidentDescription"
             value={incidentDescription}
             onChange={(e) => setIncidentDescription(e.target.value)}
-            placeholder="Describe the billing issue or denial — e.g., unexpected charge, service not covered, balance-billing concern..."
+            placeholder="e.g., I received a $4,200 bill for a procedure I was told would be covered…"
             rows={5}
-            className="w-full rounded-lg px-4 py-2.5 text-sm input-recessed resize-none focus:outline-none"
-            style={{ color: "var(--text-primary)" }}
+            required
+            className="w-full rounded-xl px-4 py-3 text-sm input-recessed resize-none focus:outline-none"
+            style={{ color: "var(--text-primary)", lineHeight: "1.6" }}
           />
         </div>
+
+        {/* Completion hint */}
+        {!isValid && (
+          <p className="type-caption" style={{ color: "var(--text-muted)" }}>
+            Complete all fields above to continue.
+          </p>
+        )}
 
         {/* Error */}
         {error && (
           <div
-            className="rounded-lg p-3"
+            className="rounded-xl px-4 py-3 animate-fade-in"
             style={{
               background: "var(--risk-critical-bg)",
               border: "1px solid var(--risk-critical-border)",
             }}
+            role="alert"
           >
-            <p className="text-sm" style={{ color: "var(--risk-critical)" }}>{error}</p>
+            <p
+              className="type-body"
+              style={{ color: "var(--risk-critical)" }}
+            >
+              {error}
+            </p>
           </div>
         )}
 
-        {/* Submit button - amber accent */}
+        {/* Submit */}
         <button
           type="submit"
           disabled={!isValid || submitting}
-          className="w-full py-3 rounded-lg text-sm font-semibold btn-press flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-xl font-semibold btn-press flex items-center justify-center gap-2.5 transition-all"
           style={{
-            background: isValid && !submitting ? "var(--accent-primary)" : "var(--bg-elevated)",
-            color: isValid && !submitting ? "var(--bg-base)" : "var(--text-muted)",
+            background:
+              isValid && !submitting
+                ? "var(--accent-primary)"
+                : "var(--bg-elevated)",
+            color:
+              isValid && !submitting
+                ? "var(--bg-base)"
+                : "var(--text-muted)",
             cursor: isValid && !submitting ? "pointer" : "not-allowed",
-            boxShadow: isValid && !submitting ? "0 4px 14px rgba(245, 166, 35, 0.3)" : "none",
+            boxShadow:
+              isValid && !submitting
+                ? "0 4px 20px rgba(245, 166, 35, 0.30)"
+                : "none",
+            fontSize: "0.9375rem",
+            letterSpacing: "-0.01em",
+            transition: "background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease",
           }}
         >
           {submitting ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Submitting Case...
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+              Submitting…
             </>
           ) : (
             <>
-              <Shield className="w-4 h-4" />
+              <Shield className="w-4 h-4" aria-hidden="true" />
               Start Review
+              {isValid && (
+                <ArrowRight className="w-4 h-4 ml-auto" aria-hidden="true" />
+              )}
             </>
           )}
         </button>
+
+        <p
+          className="type-caption text-center"
+          style={{ color: "var(--text-muted)" }}
+        >
+          Your documents are encrypted and never shared.
+        </p>
       </form>
     </div>
   );

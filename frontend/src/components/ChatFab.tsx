@@ -42,7 +42,7 @@ export default function ChatFab() {
             data-testid="voice-fab"
             onClick={() => openWith("voice")}
             aria-label="Open voice advocate — hands-free bill review"
-            className="w-16 h-16 rounded-full flex items-center justify-center btn-press"
+            className="w-16 h-16 rounded-full flex items-center justify-center btn-press focus-ring"
             style={{
               background: "linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover))",
               boxShadow: "0 4px 24px rgba(245, 166, 35, 0.35), 0 0 0 4px rgba(245, 166, 35, 0.10)",
@@ -57,7 +57,7 @@ export default function ChatFab() {
             data-testid="chat-fab"
             onClick={() => openWith("chat")}
             aria-label="Open chat assistant"
-            className="w-12 h-12 rounded-full flex items-center justify-center btn-press"
+            className="w-12 h-12 rounded-full flex items-center justify-center btn-press focus-ring"
             style={{
               background: "var(--bg-surface)",
               border: "1px solid var(--border-default)",
@@ -92,7 +92,7 @@ export default function ChatFab() {
               data-testid="chat-fab-close"
               aria-label="Close patient advocate panel"
               onClick={() => setIsOpen(false)}
-              className="absolute top-3 right-3 z-10 w-11 h-11 rounded-lg flex items-center justify-center transition-colors"
+              className="absolute top-3 right-3 z-10 w-11 h-11 rounded-lg flex items-center justify-center transition-colors focus-ring"
               style={{
                 color: "var(--text-muted)",
                 background: "var(--bg-elevated)",
@@ -101,59 +101,95 @@ export default function ChatFab() {
               <X size={16} aria-hidden="true" />
             </button>
 
-            {/* Mode tabs */}
+            {/* ── Mode tabs ─────────────────────── */}
             <div
-              className="flex px-4 pt-4 pb-2 gap-1"
+              className="flex px-4 pt-4 pb-0 gap-1"
               style={{ borderBottom: "1px solid var(--border-subtle)" }}
+              role="tablist"
+              aria-label="Advocate mode"
             >
               <button
+                role="tab"
                 onClick={() => setMode("voice")}
                 aria-label="Switch to voice mode"
+                aria-selected={mode === "voice"}
                 aria-pressed={mode === "voice"}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-t-lg text-sm font-medium transition-colors focus-ring"
                 style={{
-                  background: mode === "voice" ? "var(--accent-primary-bg)" : "transparent",
+                  background: mode === "voice" ? "var(--bg-surface)" : "transparent",
                   color: mode === "voice" ? "var(--accent-primary)" : "var(--text-secondary)",
-                  border: mode === "voice" ? "1px solid var(--accent-primary-border)" : "1px solid transparent",
+                  borderTop: mode === "voice" ? "1px solid var(--border-subtle)" : "1px solid transparent",
+                  borderLeft: mode === "voice" ? "1px solid var(--border-subtle)" : "1px solid transparent",
+                  borderRight: mode === "voice" ? "1px solid var(--border-subtle)" : "1px solid transparent",
+                  borderBottom: mode === "voice" ? "1px solid var(--bg-surface)" : "1px solid transparent",
+                  marginBottom: mode === "voice" ? "-1px" : 0,
+                  position: "relative",
                 }}
               >
-                <Mic size={16} aria-hidden="true" />
+                <Mic size={15} aria-hidden="true" />
                 Voice
               </button>
               <button
+                role="tab"
                 onClick={() => setMode("chat")}
                 aria-label="Switch to chat mode"
+                aria-selected={mode === "chat"}
                 aria-pressed={mode === "chat"}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-t-lg text-sm font-medium transition-colors focus-ring"
                 style={{
-                  background: mode === "chat" ? "var(--accent-primary-bg)" : "transparent",
+                  background: mode === "chat" ? "var(--bg-surface)" : "transparent",
                   color: mode === "chat" ? "var(--accent-primary)" : "var(--text-secondary)",
-                  border: mode === "chat" ? "1px solid var(--accent-primary-border)" : "1px solid transparent",
+                  borderTop: mode === "chat" ? "1px solid var(--border-subtle)" : "1px solid transparent",
+                  borderLeft: mode === "chat" ? "1px solid var(--border-subtle)" : "1px solid transparent",
+                  borderRight: mode === "chat" ? "1px solid var(--border-subtle)" : "1px solid transparent",
+                  borderBottom: mode === "chat" ? "1px solid var(--bg-surface)" : "1px solid transparent",
+                  marginBottom: mode === "chat" ? "-1px" : 0,
+                  position: "relative",
                 }}
               >
-                <MessageSquare size={16} aria-hidden="true" />
+                <MessageSquare size={15} aria-hidden="true" />
                 Chat
               </button>
             </div>
 
             {mode === "voice" ? (
               /* ── Voice mode: centered, prominent ── */
-              <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4">
-                <p
-                  className="type-section-title text-center mb-2"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  Sovereign Voice Advocate
-                </p>
-                <p className="text-sm text-center mb-4" style={{ color: "var(--text-secondary)" }}>
-                  Tap the mic to review a bill, check case status, or ask questions — hands free.
-                </p>
+              <div
+                className="flex-1 flex flex-col items-center justify-center px-8 py-10 gap-6"
+                style={{ background: "var(--bg-base)" }}
+              >
+                {/* Identity */}
+                <div className="text-center space-y-1.5">
+                  <p
+                    className="type-section-title"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Sovereign Voice Advocate
+                  </p>
+                  <p
+                    className="type-body"
+                    style={{ color: "var(--text-secondary)", maxWidth: 280 }}
+                  >
+                    Review a bill, check case status, or ask questions — hands free.
+                  </p>
+                </div>
+
+                {/* Divider */}
+                <div
+                  style={{
+                    width: 40,
+                    height: 1,
+                    background: "var(--border-subtle)",
+                  }}
+                  aria-hidden="true"
+                />
+
                 <VoiceButton autoStart />
               </div>
             ) : (
               /* ── Chat mode ── */
               <>
-                <div className="flex-1 min-h-0">
+                <div className="flex-1 min-h-0" style={{ background: "var(--bg-base)" }}>
                   <ChatPanel claimId={claimId} />
                 </div>
                 {/* Voice button at bottom of chat too */}
