@@ -16,7 +16,7 @@ import hashlib
 import json
 import logging
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
@@ -210,15 +210,40 @@ class TrustSigner:
 # -- Helpers -------------------------------------------------------------------
 
 
+def _normalize_numbers(obj: Any) -> Any:
+    """Make int and integer-valued float canonicalize identically.
+
+    A receipt is signed in Python (json renders 100.0 -> "100.0") but verified
+    after a browser round-trip, where JavaScript's JSON collapses 100.0 -> 100
+    and 0.0 -> 0. That would change the canonical bytes and break verification.
+    Normalizing integer-valued floats to int on BOTH sign and verify keeps the
+    signature stable across languages.
+    """
+    if isinstance(obj, bool):
+        return obj
+    if isinstance(obj, float):
+        try:
+            if obj == int(obj):
+                return int(obj)
+        except (ValueError, OverflowError):
+            pass
+        return obj
+    if isinstance(obj, dict):
+        return {k: _normalize_numbers(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_normalize_numbers(v) for v in obj]
+    return obj
+
+
 def _canonical_serialize(payload: dict) -> bytes:
     """
-    Deterministic JSON serialization for signing.
+    Deterministic, cross-language JSON serialization for signing.
 
-    Sorted keys, no whitespace, ensure_ascii=True. This ensures the same
-    data always produces the same bytes regardless of dict ordering.
+    Sorted keys, no whitespace, ensure_ascii=True, and integer-valued floats
+    normalized to int so Python-signed receipts verify after a JS round-trip.
     """
     return json.dumps(
-        payload,
+        _normalize_numbers(payload),
         sort_keys=True,
         separators=(",", ":"),
         ensure_ascii=True,

@@ -117,7 +117,8 @@ export async function verifyReceipt(
   return fetchJSON<VerifyReceiptResult>(`${BASE_URL}/api/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(receiptData),
+    // Backend VerifyRequest expects { receipt: <obj> }, not the bare receipt.
+    body: JSON.stringify({ receipt: receiptData }),
   });
 }
 
