@@ -62,7 +62,7 @@ function DataField({ label, value }: { label: string; value: string }) {
   return (
     <div
       className="flex items-start justify-between gap-4 py-2 last:border-0"
-      style={{ borderBottom: "1px solid rgba(26, 40, 69, 0.5)" }}
+      style={{ borderBottom: "1px solid var(--border-subtle)" }}
     >
       <span className="label flex-shrink-0">{label}</span>
       <span className="text-sm text-right" style={{ color: "var(--text-primary)" }}>
@@ -782,7 +782,7 @@ export default function ClaimDetailPage({
           className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           style={{
             background: "var(--risk-critical)",
-            color: "var(--text-primary)",
+            color: "#ffffff",
           }}
         >
           Retry

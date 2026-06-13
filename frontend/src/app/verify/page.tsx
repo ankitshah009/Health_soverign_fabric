@@ -241,7 +241,7 @@ function QRCode({ value, size = 200 }: { value: string; size?: number }) {
               y={quietZone + r * moduleSize}
               width={moduleSize}
               height={moduleSize}
-              fill="#08080A"
+              fill="var(--text-primary)"
             />
           ) : null
         )

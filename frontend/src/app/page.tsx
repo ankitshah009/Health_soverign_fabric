@@ -113,8 +113,12 @@ function HeroStat({ value }: { value: number }) {
         Total Recoverable
       </p>
       <p
-        className="text-5xl font-bold tabular-nums leading-none"
-        style={{ color: "var(--accent-primary)", fontVariantNumeric: "tabular-nums" }}
+        className="text-6xl leading-none tabular-nums"
+        style={{
+          color: "var(--recovered)",
+          fontFamily: "var(--font-serif)",
+          fontVariantNumeric: "tabular-nums",
+        }}
       >
         {formatted}
       </p>
@@ -380,8 +384,8 @@ export default function DashboardPage() {
               className={cn(
                 "rounded-xl border-2 border-dashed p-6 text-center transition-all duration-200 cursor-pointer",
                 dragOver
-                  ? "border-amber-400 bg-amber-400/10"
-                  : "border-[var(--border-secondary)] hover:border-amber-400/60 hover:bg-amber-400/5"
+                  ? "border-[var(--accent-primary)] bg-[var(--accent-primary-bg)]"
+                  : "border-[var(--border-secondary)] hover:border-[var(--accent-primary-border)] hover:bg-[var(--accent-primary-bg)]"
               )}
               onDragOver={(e) => {
                 e.preventDefault();
@@ -428,9 +432,9 @@ export default function DashboardPage() {
             <div
               className="rounded-xl p-4 flex items-center gap-4 animate-fade-in"
               style={{
-                background: "var(--bg-card)",
-                border: "2px solid #d97706",
-                boxShadow: "0 0 16px rgba(217,119,6,0.25)",
+                background: "var(--bg-surface)",
+                border: "2px solid var(--accent-primary)",
+                boxShadow: "0 0 16px rgba(43,130,240,0.18)",
               }}
             >
               {pendingPreview && (
@@ -445,7 +449,7 @@ export default function DashboardPage() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
                   <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
                     {pendingFile?.name}
                   </p>
@@ -457,7 +461,7 @@ export default function DashboardPage() {
               <button
                 onClick={handleRemovePending}
                 aria-label="Remove uploaded document"
-                className="w-11 h-11 rounded-lg flex items-center justify-center transition-colors hover:bg-white/10 flex-shrink-0 cursor-pointer"
+                className="w-11 h-11 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--bg-elevated)] flex-shrink-0 cursor-pointer"
                 title="Remove photo"
               >
                 <X className="w-4 h-4" style={{ color: "var(--text-muted)" }} aria-hidden="true" />
@@ -487,7 +491,7 @@ export default function DashboardPage() {
             className="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
             style={{
               background: "var(--risk-critical)",
-              color: "var(--text-primary)",
+              color: "#ffffff",
             }}
           >
             Retry

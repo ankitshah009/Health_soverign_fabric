@@ -191,9 +191,9 @@ function FileDropZone({
     <div
       className="absolute inset-0 z-10 flex items-center justify-center rounded-xl"
       style={{
-        background: "rgba(8,8,10,0.92)",
+        background: "var(--glass-bg)",
         border: "2px dashed var(--accent-primary)",
-        backdropFilter: "blur(4px)",
+        backdropFilter: "blur(var(--glass-blur))",
       }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
@@ -210,11 +210,11 @@ function FileDropZone({
         />
         <p
           className="type-subtitle"
-          style={{ color: "var(--accent-primary)" }}
+          style={{ color: "var(--text-primary)" }}
         >
           Drop your medical bill or EOB
         </p>
-        <p className="type-caption" style={{ color: "var(--text-muted)" }}>
+        <p className="type-caption" style={{ color: "var(--text-secondary)" }}>
           PDF or image accepted
         </p>
       </div>

@@ -249,7 +249,7 @@ function NodeIcon({ state, score }: { state: NodeState; score: number | null }) 
         className={`${size} animate-pulse-glow`}
         style={{
           background: "var(--accent-primary)",
-          boxShadow: "0 0 20px rgba(245,166,35,0.4)",
+          boxShadow: "0 0 20px rgba(43,130,240,0.35)",
         }}
       >
         <Loader2 className="w-5 h-5 text-white animate-spin" strokeWidth={2.5} />

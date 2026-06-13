@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none" role="img" aria-label="Sovereign">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7DB2FF"></stop>
+      <stop offset="1" stop-color="#2B82F0"></stop>
+    </linearGradient>
+    <mask id="m">
+      <rect width="48" height="48" fill="#fff"></rect>
+      <path d="M16.4 24.6 L21.7 29.9 L32 17.8" fill="none" stroke="#000" stroke-width="3.7" stroke-linecap="round" stroke-linejoin="round"></path>
+    </mask>
+  </defs>
+  <rect width="48" height="48" rx="12" fill="url(#g)"></rect>
+  <g transform="translate(9.2 8.2) scale(0.617)">
+    <path d="M24 4.8 L38 9.6 Q39.8 10.2 39.8 12.2 L39.8 22.8 C39.8 32.4 33 39.7 24 43.4 C15 39.7 8.2 32.4 8.2 22.8 L8.2 12.2 Q8.2 10.2 10 9.6 Z" fill="#07182E" mask="url(#m)"></path>
+  </g>
+</svg>

@@ -152,7 +152,7 @@ export async function* streamChat(
   claimId?: string,
   signal?: AbortSignal
 ): AsyncGenerator<ChatEvent> {
-  const response = await fetch(`${BASE_URL}/api/chat/stream`, {
+  const response = await fetch(`${BASE_URL}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ messages, claim_id: claimId }),

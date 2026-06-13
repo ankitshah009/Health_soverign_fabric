@@ -7,12 +7,12 @@ import {
   LayoutDashboard,
   FilePlus,
   FileStack,
-  Shield,
   Pin,
   PinOff,
   Menu,
   X,
 } from "lucide-react";
+import { SovereignMark } from "./Logo";
 
 const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -84,7 +84,7 @@ export default function Sidebar() {
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-40 md:hidden"
-          style={{ background: "rgba(0,0,0,0.6)" }}
+          style={{ background: "rgba(20,23,30,0.38)" }}
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -109,15 +109,7 @@ export default function Sidebar() {
           className="p-3 flex items-center gap-3 h-16 flex-shrink-0"
           style={{ borderBottom: "1px solid var(--border-subtle)" }}
         >
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{
-              background: "linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover))",
-              boxShadow: "0 4px 12px rgba(245, 166, 35, 0.25)",
-            }}
-          >
-            <Shield size={22} color="#fff" strokeWidth={2.5} />
-          </div>
+          <SovereignMark size={40} variant="icon" />
           <div
             className="overflow-hidden transition-all duration-300"
             style={{

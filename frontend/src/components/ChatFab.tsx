@@ -45,7 +45,7 @@ export default function ChatFab() {
             className="w-16 h-16 rounded-full flex items-center justify-center btn-press focus-ring"
             style={{
               background: "linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover))",
-              boxShadow: "0 4px 24px rgba(245, 166, 35, 0.35), 0 0 0 4px rgba(245, 166, 35, 0.10)",
+              boxShadow: "0 4px 24px rgba(43, 130, 240, 0.32), 0 0 0 4px rgba(43, 130, 240, 0.12)",
             }}
             title="Start voice conversation"
           >
@@ -61,7 +61,7 @@ export default function ChatFab() {
             style={{
               background: "var(--bg-surface)",
               border: "1px solid var(--border-default)",
-              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
+              boxShadow: "var(--shadow-md)",
             }}
             title="Open chat assistant"
           >
@@ -84,7 +84,7 @@ export default function ChatFab() {
             style={{
               background: "var(--bg-base)",
               border: "1px solid var(--border-subtle)",
-              boxShadow: "0 8px 40px rgba(0, 0, 0, 0.5)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             {/* Close button */}

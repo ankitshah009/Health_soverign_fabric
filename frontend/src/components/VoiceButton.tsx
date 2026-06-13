@@ -386,17 +386,17 @@ export default function VoiceButton({ autoStart = false }: VoiceButtonProps) {
               ? isListening
                 ? "var(--accent-primary)"
                 : isSpeaking
-                ? "rgba(34,197,94,0.15)"
+                ? "var(--risk-low-bg)"
                 : "var(--bg-elevated)"
               : "var(--bg-surface)",
             border: isActive
               ? `2px solid ${isListening ? "var(--accent-primary)" : isSpeaking ? "var(--risk-low)" : "var(--border-strong)"}`
               : "2px solid var(--border-default)",
             boxShadow: isListening
-              ? "0 0 0 4px rgba(245,166,35,0.14), 0 4px 20px rgba(245,166,35,0.22)"
+              ? "0 0 0 4px rgba(43,130,240,0.16), 0 4px 20px rgba(43,130,240,0.22)"
               : isSpeaking
-              ? "0 0 0 4px rgba(34,197,94,0.12), 0 4px 20px rgba(34,197,94,0.16)"
-              : "0 2px 12px rgba(0,0,0,0.3)",
+              ? "0 0 0 4px rgba(16,185,129,0.12), 0 4px 20px rgba(16,185,129,0.16)"
+              : "var(--shadow-md)",
             cursor: "pointer",
             transition: "background 0.2s ease, border-color 0.2s ease, box-shadow 0.3s ease",
           }}

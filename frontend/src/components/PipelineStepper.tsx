@@ -109,7 +109,7 @@ function StepCircle({ state }: { state: StepState }) {
         className={cn(base, "animate-pulse-glow")}
         style={{
           background: "var(--accent-primary)",
-          boxShadow: "0 0 20px rgba(245, 166, 35, 0.5), 0 0 40px rgba(245, 166, 35, 0.2)",
+          boxShadow: "0 0 20px rgba(43, 130, 240, 0.45), 0 0 40px rgba(43, 130, 240, 0.18)",
         }}
       >
         <Loader2 className="w-5 h-5 text-white animate-spin" strokeWidth={2.5} />

@@ -33,11 +33,11 @@ const defaultData: RadarDataItem[] = [
 ];
 
 /* Recharts renders to SVG/Canvas — CSS vars don't work.
-   These must be raw hex values matching the design tokens. */
+   These must be raw hex values matching the v2 LIGHT design tokens. */
 const CHART_COLORS = {
-  grid: "#1F1F2A",         // --border-subtle
-  axisLabel: "#A8A8B3",    // --text-secondary
-  axisTick: "#5C5C6B",     // --text-muted
+  grid: "#C8D0DF",         // --border-subtle on light bg
+  axisLabel: "#535A69",    // --text-secondary (dark enough on white)
+  axisTick: "#8A93A8",     // --text-tertiary
   riskLow: "#22C55E",      // --risk-low
   riskMedium: "#EAB308",   // --risk-medium
   riskCritical: "#EF4444", // --risk-critical

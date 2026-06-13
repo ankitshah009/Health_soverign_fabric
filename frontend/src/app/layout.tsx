@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import ChatFab from "@/components/ChatFab";
@@ -18,6 +19,14 @@ const sovereignMono = localFont({
   display: "swap",
 });
 
+const sovereignSerif = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Sovereign | Your AI Patient Advocate",
   description: "Sovereign finds medical-bill overcharges, flags illegal balance-billing, and fights insurance denials — with a provable conscience.",
@@ -29,9 +38,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" style={{ colorScheme: "light" }}>
       <body
-        className={`${sovereignSans.variable} ${sovereignMono.variable} antialiased`}
+        className={`${sovereignSans.variable} ${sovereignMono.variable} ${sovereignSerif.variable} antialiased`}
       >
         <Sidebar />
         <main className="min-h-screen transition-[margin-left] duration-300" style={{ marginLeft: "var(--sidebar-width, 64px)" }}>

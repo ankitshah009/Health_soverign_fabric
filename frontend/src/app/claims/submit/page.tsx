@@ -232,7 +232,7 @@ export default function SubmitClaimPage() {
             cursor: isValid && !submitting ? "pointer" : "not-allowed",
             boxShadow:
               isValid && !submitting
-                ? "0 4px 20px rgba(245, 166, 35, 0.30)"
+                ? "0 4px 20px rgba(43, 130, 240, 0.28)"
                 : "none",
             fontSize: "0.9375rem",
             letterSpacing: "-0.01em",

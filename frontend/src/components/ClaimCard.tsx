@@ -109,7 +109,7 @@ export default function ClaimCard({ claim }: ClaimCardProps) {
             {amount !== undefined && amount !== null && (
               <span
                 className="text-sm font-bold stat-value tabular-nums"
-                style={{ color: "var(--accent-primary)" }}
+                style={{ color: "var(--recovered)" }}
               >
                 {formatCurrency(amount)}
               </span>

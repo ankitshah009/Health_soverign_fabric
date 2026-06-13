@@ -231,14 +231,15 @@ function ScanQRCode({ url }: { url: string }) {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      {/* Framed QR cell */}
+      {/* Framed QR cell — white bg required for scanner contrast */}
       <div
         style={{
           background: "#ffffff",
-          border: "3px solid #ffffff",
-          borderRadius: "6px",
+          border: "1px solid var(--border-default)",
+          borderRadius: "8px",
           display: "inline-block",
-          boxShadow: "0 0 0 1px rgba(255,255,255,0.12)",
+          boxShadow: "var(--shadow-sm)",
+          padding: "4px",
         }}
         title="Scan to verify — patient-owned proof"
       >
@@ -259,7 +260,7 @@ function ScanQRCode({ url }: { url: string }) {
                   y={quietZone + r * moduleSize}
                   width={moduleSize}
                   height={moduleSize}
-                  fill="#08080A"
+                  fill="var(--text-primary)"
                 />
               ) : null
             )
@@ -268,9 +269,9 @@ function ScanQRCode({ url }: { url: string }) {
       </div>
       <p
         className="type-micro text-center"
-        style={{ color: "var(--text-muted)", letterSpacing: "0.1em" }}
+        style={{ color: "var(--text-muted)", letterSpacing: "0.12em" }}
       >
-        Scan to verify
+        SCAN TO VERIFY
       </p>
     </div>
   );
@@ -535,7 +536,7 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border-default)",
-        boxShadow: "0 0 0 1px var(--border-subtle), 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+        boxShadow: "var(--shadow-lg)",
       }}
       role="region"
       aria-label="Cryptographically signed decision receipt"
@@ -549,8 +550,28 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
         aria-hidden="true"
       />
 
-      {/* Verified watermark */}
-      <div className="verified-stamp" aria-hidden="true">VERIFIED</div>
+      {/* Verified watermark — light printed-certificate diagonal ghost */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: "38%",
+          right: "-10%",
+          fontSize: "7rem",
+          fontWeight: 900,
+          letterSpacing: "0.12em",
+          color: "var(--border-subtle)",
+          opacity: 0.55,
+          transform: "rotate(-35deg)",
+          pointerEvents: "none",
+          userSelect: "none",
+          zIndex: 0,
+          whiteSpace: "nowrap",
+          fontFamily: "var(--font-serif)",
+        }}
+      >
+        VERIFIED
+      </div>
 
       <div className="relative z-10 p-6">
 
@@ -746,7 +767,23 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
             className="pt-5 mt-5"
             style={{ borderTop: "1px solid var(--border-subtle)" }}
           >
-            <h4 className="label mb-4">Verification</h4>
+            {/* Section label — azure accent pill, court-grade framing */}
+            <div className="flex items-center gap-3 mb-4">
+              <h4 className="label">Verification</h4>
+              <span
+                className="type-micro"
+                style={{
+                  color: "var(--accent-primary)",
+                  background: "var(--accent-primary-bg)",
+                  border: "1px solid var(--accent-primary-border)",
+                  borderRadius: "4px",
+                  padding: "2px 7px",
+                  letterSpacing: "0.1em",
+                }}
+              >
+                Ed25519 · cryptographically signed
+              </span>
+            </div>
 
             {/* Two-column: QR left, URL actions right */}
             <div className="flex items-start gap-5">

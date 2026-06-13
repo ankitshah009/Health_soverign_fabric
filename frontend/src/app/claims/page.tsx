@@ -199,7 +199,7 @@ export default function AllClaimsPage() {
             className="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
             style={{
               background: "var(--risk-critical)",
-              color: "var(--text-primary)",
+              color: "#ffffff",
             }}
           >
             Retry
@@ -308,7 +308,7 @@ export default function AllClaimsPage() {
                         className="text-sm font-semibold tabular-nums"
                         style={{
                           color: amount !== undefined && amount !== null
-                            ? "var(--accent-primary)"
+                            ? "var(--recovered)"
                             : "var(--text-muted)",
                           fontVariantNumeric: "tabular-nums",
                         }}

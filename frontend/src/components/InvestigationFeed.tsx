@@ -221,8 +221,8 @@ export default function InvestigationFeed({
     <div className="card p-6">
       <style>{`
         @keyframes amberPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.3); }
-          50% { box-shadow: 0 0 12px 4px rgba(245, 166, 35, 0.15); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(43, 130, 240, 0.25); }
+          50% { box-shadow: 0 0 10px 4px rgba(43, 130, 240, 0.12); }
         }
       `}</style>
 
