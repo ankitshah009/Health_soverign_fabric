@@ -49,7 +49,7 @@ export default function ChatFab() {
             }}
             title="Start voice conversation"
           >
-            <Mic size={26} color="var(--bg-base)" strokeWidth={2.5} aria-hidden="true" />
+            <Mic size={26} color="#FFFFFF" strokeWidth={2.5} aria-hidden="true" />
           </button>
 
           {/* Chat FAB — secondary, smaller */}

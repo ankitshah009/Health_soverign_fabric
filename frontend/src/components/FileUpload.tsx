@@ -156,10 +156,10 @@ export default function FileUpload({
             </p>
             <div
               className="flex items-center gap-1.5 mt-2.5"
-              style={{ color: "var(--risk-low)" }}
+              style={{ color: "var(--risk-low-text)" }}
             >
               <Check className="w-3.5 h-3.5" aria-hidden="true" />
-              <span className="type-caption" style={{ color: "var(--risk-low)" }}>
+              <span className="type-caption" style={{ color: "var(--risk-low-text)" }}>
                 Ready to submit
               </span>
             </div>

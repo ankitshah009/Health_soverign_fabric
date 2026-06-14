@@ -11,7 +11,7 @@ from app.aubric.approval_engine import approval_engine
 from app.aubric.intent_normalizer import intent_normalizer
 from app.aubric.receipt_engine import receipt_engine
 from app.aubric.risk_engine import risk_engine
-from app.database import add_audit_entry, get_claim, update_claim
+from app.database import add_audit_entry, get_claim, list_claims, update_claim
 from app.models.claim import FraudScore
 from app.models.decision import ApprovalRequest, DecisionReceipt
 from app.skills.payout_execution import payout_execution_skill
@@ -157,3 +157,22 @@ async def get_claim_receipt(claim_id: str) -> dict[str, Any]:
         )
 
     return receipt
+
+
+@router.get("/receipts/{receipt_id}")
+async def get_receipt_by_id(receipt_id: str) -> dict[str, Any]:
+    """Fetch a signed decision receipt by its receipt_id.
+
+    Powers the short ``/verify?id=<receipt_id>`` QR-code flow: the QR encodes
+    only the compact receipt_id, and the verify page calls this endpoint to
+    retrieve the full receipt dict before running Ed25519 verification.
+    """
+    for claim in await list_claims():
+        receipt = claim.get("receipt")
+        if isinstance(receipt, dict) and receipt.get("receipt_id") == receipt_id:
+            return receipt
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"No receipt found with receipt_id {receipt_id}.",
+    )

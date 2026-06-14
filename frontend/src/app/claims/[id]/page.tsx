@@ -234,24 +234,24 @@ function OverviewTab({
 
           {claim.extracted_data ? (
             <div className="space-y-3">
+              {claim.extracted_data.document_type && (
+                <DataField label="Document Category" value={claim.extracted_data.document_type} />
+              )}
               {claim.extracted_data.damage_type && (
-                <DataField label="Damage Type" value={claim.extracted_data.damage_type} />
+                <DataField label="Document Sub-type" value={claim.extracted_data.damage_type} />
+              )}
+              {claim.extracted_data.vehicle_info && (
+                <DataField label="Provider" value={claim.extracted_data.vehicle_info} />
               )}
               {claim.extracted_data.estimated_cost !== undefined &&
                 claim.extracted_data.estimated_cost > 0 && (
                   <DataField
-                    label="Estimated Cost"
+                    label="Total Billed"
                     value={`$${claim.extracted_data.estimated_cost.toLocaleString()}`}
                   />
                 )}
-              {claim.extracted_data.vehicle_info && (
-                <DataField label="Vehicle Info" value={claim.extracted_data.vehicle_info} />
-              )}
               {claim.extracted_data.incident_details && (
-                <DataField label="Incident Details" value={claim.extracted_data.incident_details} />
-              )}
-              {claim.extracted_data.document_type && (
-                <DataField label="Document Type" value={claim.extracted_data.document_type} />
+                <DataField label="Line Items / Description" value={claim.extracted_data.incident_details} />
               )}
               {claim.extracted_data.key_findings &&
                 claim.extracted_data.key_findings.length > 0 && (
@@ -259,7 +259,7 @@ function OverviewTab({
                     className="pt-3 mt-3"
                     style={{ borderTop: "1px solid var(--border-subtle)" }}
                   >
-                    <span className="label block mb-2">Key Findings</span>
+                    <span className="label block mb-2">Notable Findings</span>
                     <ul className="space-y-1.5">
                       {claim.extracted_data.key_findings.map((finding, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm">
@@ -686,7 +686,8 @@ export default function ClaimDetailPage({
 
   // Poll for updates while processing
   useEffect(() => {
-    if (!claim || (claim.status !== "processing" && claim.status !== "submitted"))
+    const activeStatuses: ClaimData["status"][] = ["processing", "submitted"];
+    if (!claim || !activeStatuses.includes(claim.status))
       return;
 
     let mounted = true;
@@ -798,9 +799,16 @@ export default function ClaimDetailPage({
     claim.status === "approved" ||
     claim.status === "auto_approved" ||
     claim.status === "denied" ||
-    claim.status === "blocked";
+    claim.status === "blocked" ||
+    claim.status === "analyzed" ||
+    claim.status === "ready" ||
+    claim.status === "needs_consent";
   const canApprove =
-    claim.status === "pending_review" || claim.status === "escalated";
+    claim.status === "pending_review" ||
+    claim.status === "escalated" ||
+    claim.status === "analyzed" ||
+    claim.status === "ready" ||
+    claim.status === "needs_consent";
 
   return (
     <div className="space-y-6 animate-fade-in">

@@ -224,7 +224,7 @@ function getRiskLabel(score: number | null): string {
 }
 
 function buildInitialNodes(status: string): TimelineNode[] {
-  const terminalStatuses = ["approved", "auto_approved", "denied", "blocked"];
+  const terminalStatuses = ["approved", "auto_approved", "denied", "blocked", "analyzed", "ready", "needs_consent"];
   const reviewStatuses = ["pending_review", "escalated"];
   const allComplete =
     terminalStatuses.includes(status) || reviewStatuses.includes(status);
@@ -505,7 +505,7 @@ interface RiskTimelineProps {
   status: string;
 }
 
-const COMPLETED_STATUSES = ["approved", "auto_approved", "denied", "blocked", "pending_review", "escalated"];
+const COMPLETED_STATUSES = ["approved", "auto_approved", "denied", "blocked", "pending_review", "escalated", "analyzed", "ready", "needs_consent"];
 
 export default function RiskTimeline({ claimId, status }: RiskTimelineProps) {
   const [nodes, setNodes] = useState<TimelineNode[]>(() =>

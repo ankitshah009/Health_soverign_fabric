@@ -490,17 +490,16 @@ export default function DecisionReceipt({ receipt }: DecisionReceiptProps) {
       ? `${receipt.signature_hash.slice(0, 10)}...${receipt.signature_hash.slice(-10)}`
       : receipt.signature_hash;
 
-  // Build verification URL — safe for both SSR and CSR
-  // Encodes the full receipt JSON as base64 so the /verify page can decode
-  // and independently verify the Ed25519 signature without a backend lookup.
+  // Build verification URL — safe for both SSR and CSR.
+  // Uses the SHORT ?id=<receipt_id> form (~45 chars) so it fits cleanly inside
+  // the dependency-free Version-3 QR code and scans reliably. The /verify page
+  // fetches the full receipt by id from /api/receipts/{id}, then runs Ed25519
+  // verification. (The /verify?receipt=<base64> path still works as a fallback.)
   const [verificationUrl, setVerificationUrl] = useState<string>("");
   useEffect(() => {
-    try {
-      const b64 = btoa(JSON.stringify(receipt));
-      setVerificationUrl(`${window.location.origin}/verify?receipt=${encodeURIComponent(b64)}`);
-    } catch {
-      setVerificationUrl(`${window.location.origin}/verify?id=${receipt.receipt_id}`);
-    }
+    setVerificationUrl(
+      `${window.location.origin}/verify?id=${encodeURIComponent(receipt.receipt_id)}`
+    );
   }, [receipt]);
 
   const copyToClipboard = async (text: string) => {

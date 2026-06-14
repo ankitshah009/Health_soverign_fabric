@@ -22,40 +22,44 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; b
   },
   pending_review: {
     label: "Under Review",
-    color: "var(--status-review)",
+    // --risk-high-text (#C2410C) is 4.65:1 on white — passes AA
+    color: "var(--risk-high-text)",
     bg: "var(--status-review-bg)",
-    border: "var(--status-review-bg)",
+    border: "var(--risk-high-border)",
     dot: true,
   },
   auto_approved: {
     label: "Auto-Approved",
-    color: "var(--status-approved)",
+    // --risk-low-text (#047857) is 5.8:1 on white — passes AA
+    color: "var(--risk-low-text)",
     bg: "var(--status-approved-bg)",
-    border: "var(--status-approved-bg)",
+    border: "var(--risk-low-border)",
   },
   approved: {
     label: "Approved",
-    color: "var(--status-approved)",
+    // --risk-low-text (#047857) is 5.8:1 on white — passes AA
+    color: "var(--risk-low-text)",
     bg: "var(--status-approved-bg)",
-    border: "var(--status-approved-bg)",
+    border: "var(--risk-low-border)",
   },
   denied: {
     label: "Denied",
     color: "var(--status-denied)",
     bg: "var(--status-denied-bg)",
-    border: "var(--status-denied-bg)",
+    border: "rgba(251,113,133,0.40)",
   },
   escalated: {
     label: "Escalated",
     color: "var(--status-escalated)",
     bg: "var(--status-escalated-bg)",
-    border: "var(--status-escalated-bg)",
+    border: "rgba(167,139,250,0.40)",
   },
+  // "blocked" is renamed to patient-facing "Needs Escalation" (violet/amber, NOT red)
   blocked: {
-    label: "Blocked",
-    color: "var(--risk-critical)",
-    bg: "var(--risk-critical-bg)",
-    border: "var(--risk-critical-border)",
+    label: "Needs Escalation",
+    color: "var(--status-escalated)",
+    bg: "var(--status-escalated-bg)",
+    border: "rgba(167,139,250,0.40)",
   },
   error: {
     label: "Error",

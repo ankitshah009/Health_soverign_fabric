@@ -261,6 +261,24 @@ function decodeBase64Receipt(b64: string): DecisionReceipt | null {
   }
 }
 
+// Mirrors BASE_URL resolution in lib/api so the short ?id= QR flow can fetch
+// the full receipt by id before running Ed25519 verification.
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+async function fetchReceiptById(id: string): Promise<DecisionReceipt> {
+  const res = await fetch(`${API_BASE_URL}/api/receipts/${encodeURIComponent(id)}`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      res.status === 404
+        ? `No receipt found for ID "${id}".`
+        : `Could not load receipt "${id}" (HTTP ${res.status}). ${text}`.trim()
+    );
+  }
+  return (await res.json()) as DecisionReceipt;
+}
+
 function formatDate(ts: string): string {
   try {
     return new Date(ts).toLocaleString("en-US", {
@@ -326,10 +344,16 @@ export default function VerifyPage() {
       }
       doVerify(obj);
     } else if (id) {
-      // Fallback: id-only mode — we don't have the full receipt object,
-      // show a helpful message directing user to the full receipt link.
-      setErrorMsg(`Receipt ID "${id}" provided, but full receipt data is required for Ed25519 verification. Please use the QR code or verify URL from the original Decision Receipt.`);
-      setPageState("error");
+      // Short-URL mode (QR payload): fetch the full receipt by its id, then
+      // run the same Ed25519 verification flow as the base64 path.
+      fetchReceiptById(id)
+        .then((obj) => doVerify(obj))
+        .catch((err) => {
+          setErrorMsg(
+            err instanceof Error ? err.message : `Could not load receipt "${id}".`
+          );
+          setPageState("error");
+        });
     } else {
       setPageState("empty");
     }

@@ -103,15 +103,17 @@ export function getRelativeTime(date: Date): string {
   return `${Math.floor(diffDays / 7)}w ago`;
 }
 
-/** Get urgency color based on claim age (for claim age indicators) */
+/** Get neutral age color based on claim age.
+ *  Routine timestamps must NOT use risk-critical/high — that implies an error.
+ *  All values stay in the neutral text ramp so demo data looks clean. */
 export function getAgeColor(date: string | Date): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const hoursOld = (Date.now() - d.getTime()) / 3600000;
 
-  if (hoursOld < 2) return "var(--risk-low)";
-  if (hoursOld < 8) return "var(--risk-medium)";
-  if (hoursOld < 24) return "var(--risk-high)";
-  return "var(--risk-critical)";
+  if (hoursOld < 2) return "var(--text-tertiary)";
+  if (hoursOld < 8) return "var(--text-tertiary)";
+  if (hoursOld < 24) return "var(--text-muted)";
+  return "var(--text-muted)";
 }
 
 /** Format currency amount */

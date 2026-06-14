@@ -55,7 +55,8 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
           <span
             className="type-overline flex-shrink-0 px-2 py-0.5 rounded"
             style={{
-              color: "var(--risk-low)",
+              // --risk-low-text (#047857) is 5.8:1 on --risk-low-bg — passes AA
+              color: "var(--risk-low-text)",
               background: "var(--risk-low-bg)",
             }}
           >
@@ -148,7 +149,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         }`}
         style={{
           background: isUser ? "var(--accent-primary)" : "var(--bg-surface)",
-          color: isUser ? "var(--bg-base)" : "var(--text-primary)",
+          color: isUser ? "#FFFFFF" : "var(--text-primary)",
           border: isUser ? "none" : "1px solid var(--border-subtle)",
           lineHeight: 1.55,
         }}
@@ -159,7 +160,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             <span
               className="inline-block w-px h-4 ml-0.5 align-text-bottom"
               style={{
-                background: isUser ? "var(--bg-base)" : "var(--accent-primary)",
+                background: isUser ? "#FFFFFF" : "var(--accent-primary)",
                 animation: "blink 1s step-end infinite",
               }}
               aria-hidden="true"
@@ -639,7 +640,7 @@ export default function ChatPanel({ claimId }: ChatPanelProps) {
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center btn-press focus-ring transition-colors"
             style={{
               background: canSend ? "var(--accent-primary)" : "var(--bg-overlay)",
-              color: canSend ? "var(--bg-base)" : "var(--text-muted)",
+              color: canSend ? "#FFFFFF" : "var(--text-muted)",
               cursor: canSend ? "pointer" : "not-allowed",
             }}
           >

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Shield, Car, MapPin, Wrench, Wallet } from "lucide-react";
+import { Search, Shield, Building2, FileText, Network, UserCheck, Wallet } from "lucide-react";
 import type { FraudSignal } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
@@ -22,11 +22,11 @@ interface EntityConfig {
 }
 
 const ENTITY_CONFIGS: EntityConfig[] = [
-  { key: "claimant_history", label: "Patient History", icon: Shield },
-  { key: "vehicle_property", label: "Vehicle Verification", icon: Car },
-  { key: "incident_corroboration", label: "Incident Corroboration", icon: MapPin },
-  { key: "repair_provider", label: "Repair Provider", icon: Wrench },
-  { key: "financial_stress", label: "Financial Stress", icon: Wallet },
+  { key: "claimant_history", label: "Patient History",         icon: Shield },
+  { key: "vehicle_property", label: "Provider / Facility",    icon: Building2 },
+  { key: "incident_corroboration", label: "Coverage Corroboration", icon: FileText },
+  { key: "repair_provider", label: "CPT / Code Verification",  icon: UserCheck },
+  { key: "financial_stress", label: "Network Status",          icon: Network },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -73,7 +73,8 @@ function statusDotClass(status: SignalStatus): string {
 function statusTextClass(status: SignalStatus): string {
   switch (status) {
     case "verified":
-      return "text-[var(--risk-low)]";
+      // --risk-low-text (#047857) is 5.8:1 on white — passes AA for small text
+      return "text-[var(--risk-low-text)]";
     case "risk":
       return "text-[var(--accent-primary)]";
     case "pending":

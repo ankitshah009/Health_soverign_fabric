@@ -188,6 +188,7 @@ async def root():
             "get_audit": "GET /api/claims/{claim_id}/audit",
             "process_approval": "POST /api/approvals",
             "get_receipt": "GET /api/claims/{claim_id}/receipt",
+            "get_receipt_by_id": "GET /api/receipts/{receipt_id}",
             "chat": "POST /api/chat (SSE streaming with function calling)",
             "voice": "WS /api/voice (WebSocket proxy to xAI real-time voice)",
             "verify_receipt": "POST /api/verify",

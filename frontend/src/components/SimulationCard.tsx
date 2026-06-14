@@ -55,7 +55,8 @@ function LikelihoodBadge({ level }: { level: "low" | "medium" | "high" }) {
   const config: Record<string, { label: string; color: string; bg: string; border: string }> = {
     low: {
       label: "Low",
-      color: "var(--risk-low)",
+      // --risk-low-text (#047857) is 5.8:1 on --risk-low-bg — passes AA
+      color: "var(--risk-low-text)",
       bg: "var(--risk-low-bg)",
       border: "var(--risk-low-border)",
     },

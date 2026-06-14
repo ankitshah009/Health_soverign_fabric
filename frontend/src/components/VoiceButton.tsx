@@ -83,7 +83,8 @@ const STATE_META: Record<VoiceState, { label: string; color: string }> = {
   connecting: { label: "Connecting…",      color: "var(--text-secondary)" },
   listening:  { label: "Listening",        color: "var(--accent-primary)" },
   thinking:   { label: "Thinking",         color: "var(--accent-primary)" },
-  speaking:   { label: "Speaking",         color: "var(--risk-low)" },
+  // --risk-low-text (#047857) is 5.8:1 on white — passes AA for small text
+  speaking:   { label: "Speaking",         color: "var(--risk-low-text)" },
 };
 
 export default function VoiceButton({ autoStart = false }: VoiceButtonProps) {
@@ -423,8 +424,8 @@ export default function VoiceButton({ autoStart = false }: VoiceButtonProps) {
             <Square
               className="w-6 h-6"
               style={{
-                color: isListening ? "var(--bg-base)" : "var(--text-primary)",
-                fill: isListening ? "var(--bg-base)" : "none",
+                color: isListening ? "#FFFFFF" : "var(--text-primary)",
+                fill: isListening ? "#FFFFFF" : "none",
               }}
               aria-hidden="true"
             />

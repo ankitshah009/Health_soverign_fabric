@@ -33,29 +33,34 @@ const defaultData: RadarDataItem[] = [
 ];
 
 /* Recharts renders to SVG/Canvas — CSS vars don't work.
-   These must be raw hex values matching the v2 LIGHT design tokens. */
+   These must be raw hex values matching the v2 LIGHT design tokens exactly. */
 const CHART_COLORS = {
-  grid: "#C8D0DF",         // --border-subtle on light bg
-  axisLabel: "#535A69",    // --text-secondary (dark enough on white)
-  axisTick: "#8A93A8",     // --text-tertiary
-  riskLow: "#22C55E",      // --risk-low
+  grid: "#E5E9F0",         // --border-subtle
+  axisLabel: "#535A69",    // --text-secondary
+  axisTick: "#7E8595",     // --text-tertiary
+  riskLow: "#10B981",      // --emerald-500 (bright enough for SVG fills, dark enough for strokes)
   riskMedium: "#EAB308",   // --risk-medium
-  riskCritical: "#EF4444", // --risk-critical
-  riskLowBg: "rgba(34, 197, 94, 0.10)",
+  riskHigh: "#F97316",     // --risk-high
+  riskCritical: "#F2555A", // --risk-critical
+  riskLowBg: "rgba(16, 185, 129, 0.10)",
   riskMediumBg: "rgba(234, 179, 8, 0.10)",
-  riskCriticalBg: "rgba(239, 68, 68, 0.10)",
+  riskHighBg: "rgba(249, 115, 22, 0.10)",
+  riskCriticalBg: "rgba(242, 85, 90, 0.10)",
 };
 
+/** Mirror utils.ts getRiskColor thresholds so the same score shows the same color everywhere. */
 function getScoreColor(score: number): string {
-  if (score < 30) return CHART_COLORS.riskLow;
-  if (score < 60) return CHART_COLORS.riskMedium;
-  return CHART_COLORS.riskCritical;
+  if (score >= 80) return CHART_COLORS.riskCritical;
+  if (score >= 60) return CHART_COLORS.riskHigh;
+  if (score >= 30) return CHART_COLORS.riskMedium;
+  return CHART_COLORS.riskLow;
 }
 
 function getScoreBgColor(score: number): string {
-  if (score < 30) return CHART_COLORS.riskLowBg;
-  if (score < 60) return CHART_COLORS.riskMediumBg;
-  return CHART_COLORS.riskCriticalBg;
+  if (score >= 80) return CHART_COLORS.riskCriticalBg;
+  if (score >= 60) return CHART_COLORS.riskHighBg;
+  if (score >= 30) return CHART_COLORS.riskMediumBg;
+  return CHART_COLORS.riskLowBg;
 }
 
 function getRiskLabel(level: string | null | undefined): string {

@@ -42,6 +42,9 @@ function getInitialSteps(status: string): PipelineStep[] {
     "auto_approved",
     "denied",
     "blocked",
+    "analyzed",
+    "ready",
+    "needs_consent",
   ];
   if (terminalStatuses.includes(status)) {
     return PIPELINE_STAGES.map((s) => ({
@@ -68,8 +71,14 @@ function getInitialSteps(status: string): PipelineStep[] {
     }));
   }
 
-  // For pending_review / escalated, show all up to risk_eval complete
-  if (status === "pending_review" || status === "escalated") {
+  // For pending_review / escalated / post-pipeline statuses, show all steps complete
+  if (
+    status === "pending_review" ||
+    status === "escalated" ||
+    status === "analyzed" ||
+    status === "ready" ||
+    status === "needs_consent"
+  ) {
     return PIPELINE_STAGES.map((s) => ({
       id: s.id as PipelineStep["id"],
       label: s.label,
@@ -261,7 +270,7 @@ export default function PipelineStepper({ claimId, status }: PipelineStepperProp
   const displaySteps =
     status === "error"
       ? steps.map((step) => ({ ...step, state: "error" as StepState }))
-      : ["approved", "auto_approved", "denied", "blocked", "pending_review", "escalated"].includes(status)
+      : ["approved", "auto_approved", "denied", "blocked", "pending_review", "escalated", "analyzed", "ready", "needs_consent"].includes(status)
       ? steps.map((step) => ({ ...step, state: "complete" as StepState }))
       : steps;
 
