@@ -169,6 +169,18 @@ def _safe_json_parse(raw: str) -> dict[str, Any]:
         return {}
 
 
+def _pdf_first_page_png(pdf_bytes: bytes) -> bytes:
+    """Render page 1 of a PDF to PNG bytes — vision models can't read PDFs directly."""
+    import fitz  # PyMuPDF
+
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    try:
+        pix = doc.load_page(0).get_pixmap(dpi=200)
+        return pix.tobytes("png")
+    finally:
+        doc.close()
+
+
 class GrokService:
     """Async service wrapping all Grok / xAI interactions."""
 
@@ -186,6 +198,11 @@ class GrokService:
 
         # Read file off the event loop to avoid blocking at high concurrency
         raw_bytes = await asyncio.to_thread(path.read_bytes)
+
+        # PDFs can't be sent to the vision model as image_url — render page 1 to PNG.
+        if ext == ".pdf":
+            raw_bytes = await asyncio.to_thread(_pdf_first_page_png, raw_bytes)
+            mime_sub = "png"
 
         # Check LRU cache for identical content
         cache_key = _content_hash(raw_bytes)

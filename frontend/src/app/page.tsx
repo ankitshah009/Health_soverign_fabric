@@ -403,8 +403,8 @@ export default function DashboardPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
-                aria-label="Upload a medical bill or EOB image to use with voice or chat"
+                accept="image/*,.pdf"
+                aria-label="Upload a medical bill, EOB, or PDF to use with voice or chat"
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -424,7 +424,7 @@ export default function DashboardPage() {
                     : "Drop a medical bill or EOB here to use with voice or chat"}
                 </p>
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  Accepts JPG, PNG, HEIC up to 10 MB
+                  Accepts JPG, PNG, PDF up to 10 MB
                 </p>
               </div>
             </div>
