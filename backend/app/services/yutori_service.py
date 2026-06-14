@@ -78,48 +78,62 @@ class YutoriService:
         claimant_name: str,
         incident_description: str = "",
     ) -> list[dict[str, str]]:
-        """Build the SIU research vectors used for claim verification."""
+        """Build the medical-billing research vectors used to corroborate overcharges.
+
+        entity_type keys are kept stable (the frontend maps them to patient-facing
+        labels: patient_history→Patient History, provider_facility→Provider/Facility,
+        coverage_corroboration→Coverage Corroboration, cpt_verification→CPT/Code
+        Verification, network_status→Network Status).
+        """
+        provider = extracted_data.incident_details or "the billing provider"
+        doc_category = extracted_data.damage_type or "medical bill"
         vectors: list[dict[str, str]] = [
             {
                 "entity_name": claimant_name,
-                "entity_type": "claimant_history",
+                "entity_type": "patient_history",
                 "context": (
-                    f"Search for prior insurance claims, lawsuits, or fraud allegations involving '{claimant_name}'. "
-                    f"Check court records, news articles, and public litigation databases. "
-                    f"Report any history of multiple claims, suspicious patterns, or known fraud involvement."
+                    f"Research patient billing rights and protections relevant to '{claimant_name}' "
+                    f"as a patient disputing a medical bill (No Surprises Act, the right to an "
+                    f"itemized bill, and internal/external appeal rights). Look for the patient's own "
+                    f"options to dispute incorrect charges. Do NOT investigate the patient — gather "
+                    f"information that helps them contest wrongful billing."
                 ),
             },
             {
-                "entity_name": extracted_data.damage_type or "claim repair",
-                "entity_type": "repair_provider",
+                "entity_name": doc_category,
+                "entity_type": "cpt_verification",
                 "context": (
-                    f"Investigate the legitimacy of auto repair or service providers related to this claim. "
-                    f"Claim details: '{extracted_data.damage_type}', estimated cost ${extracted_data.estimated_cost:,.0f}. "
-                    f"Check BBB ratings, Yelp reviews, complaints, and any known associations with fraud rings or inflated estimates."
+                    f"Verify the medical billing codes (CPT/HCPCS) on this {doc_category} and what "
+                    f"each code is supposed to cover. Total billed ${extracted_data.estimated_cost:,.0f}. "
+                    f"Compare the billed amounts to the fair/allowed price for each code (typical "
+                    f"Medicare and commercial allowed amounts, FAIR Health benchmarks) and flag codes "
+                    f"billed far above fair market, upcoding, or unbundling."
                 ),
             },
             {
-                "entity_name": claimant_name,
-                "entity_type": "financial_stress",
+                "entity_name": provider,
+                "entity_type": "network_status",
                 "context": (
-                    f"Search for public indicators of financial distress for '{claimant_name}'. "
-                    f"Check for bankruptcy filings, foreclosure notices, debt collection lawsuits, "
-                    f"or other financial pressure that might motivate insurance fraud."
+                    f"Determine the in-network / out-of-network status of the provider or facility "
+                    f"('{provider}') for this patient's plan. If the provider was in-network, or the "
+                    f"care was emergency or delivered at an in-network facility, surprise out-of-network "
+                    f"and balance billing are prohibited under the federal No Surprises Act — flag that."
                 ),
             },
         ]
 
-        vehicle_or_property = extracted_data.vehicle_info or extracted_data.damage_type
-        if vehicle_or_property:
+        provider_or_doc = extracted_data.vehicle_info or extracted_data.incident_details or doc_category
+        if provider_or_doc:
             vectors.insert(
                 1,
                 {
-                    "entity_name": vehicle_or_property,
-                    "entity_type": "vehicle_property",
+                    "entity_name": provider_or_doc,
+                    "entity_type": "provider_facility",
                     "context": (
-                        f"Verify the vehicle/property described as '{vehicle_or_property}'. "
-                        f"Check for salvage title history, prior total loss, stolen vehicle reports, "
-                        f"or property liens. Search VIN databases and public records."
+                        f"Look up the provider/facility on this bill ('{provider_or_doc}'). Find its "
+                        f"NPI, typical price range for the billed services, and any public complaints "
+                        f"or known patterns of overbilling, duplicate charges, or balance billing. "
+                        f"Use this to benchmark whether the charges are reasonable for the patient."
                     ),
                 },
             )
@@ -130,11 +144,12 @@ class YutoriService:
                 2,
                 {
                     "entity_name": incident_text[:100],
-                    "entity_type": "incident_corroboration",
+                    "entity_type": "coverage_corroboration",
                     "context": (
-                        f"Verify the following insurance claim incident: '{incident_text[:200]}'. "
-                        f"Check for matching police reports, weather conditions at the time, "
-                        f"traffic camera data, or news coverage that corroborates or contradicts the claim."
+                        f"Corroborate that the care described ('{incident_text[:200]}') is a covered, "
+                        f"medically necessary service under a typical major-medical/ACA plan, so a "
+                        f"denial of it would be appealable. Check standard medical-necessity criteria "
+                        f"and plan coverage norms for this type of care."
                     ),
                 },
             )
@@ -175,10 +190,10 @@ class YutoriService:
         Flow: POST to create task → poll GET for results → return.
         """
         query = (
-            f"Investigate {entity_type} '{entity_name}' in the context of "
-            f"an insurance claim. {context}. "
-            f"Determine if this entity is legitimate, check for any fraud indicators, "
-            f"and assess credibility."
+            f"Research {entity_type} '{entity_name}' in the context of a patient "
+            f"disputing a medical bill. {context}. "
+            f"Determine whether this corroborates an overcharge, billing error, or "
+            f"wrongful denial against the patient, and assess how reliable the finding is."
         )
 
         body: dict[str, Any] = {
@@ -299,7 +314,7 @@ class YutoriService:
         claimant_name: str,
         incident_description: str = "",
     ) -> list[dict[str, Any]]:
-        """Run 5 targeted SIU research vectors in parallel to verify claim entities."""
+        """Run targeted medical-billing research vectors in parallel to corroborate overcharges."""
         tasks: list[asyncio.Task[dict[str, Any]]] = []
         for vector in self._verification_vectors(
             extracted_data,
@@ -464,30 +479,32 @@ class YutoriService:
         """Run 2 targeted browsing investigations in parallel.
 
         These are deep-web investigations that use a real browser AI agent:
-        1. BBB Verification — check business ratings & complaints
-        2. Court Records / News — search for prior fraud cases
+        1. Provider/Facility check — ratings, complaints, known overbilling patterns
+        2. Fair-price benchmark — typical/allowed price for the billed services & codes
 
-        This is the "second pass" investigation triggered only when the
-        first-pass research flagged risk indicators (fraud_score > 30).
+        This is the "second pass" investigation triggered only when the first-pass
+        research flagged a meaningful overcharge (overcharge-severity score > 30).
         """
         tasks: list[asyncio.Task[dict[str, Any]]] = []
 
-        # ── Browse 1: BBB Verification ────────────────────────────────────
+        # ── Browse 1: Provider / Facility billing-reputation check ────────
         bbb_instruction = (
-            f"Go to bbb.org. Search for auto body shops or repair businesses "
-            f"related to the following insurance claim. Claim involves {damage_type} "
-            f"with estimated cost of ${estimated_cost:,.0f}. Extract any business ratings, "
-            f"complaint counts, and accreditation status you find."
+            f"Search the web (including bbb.org and patient review sites) for the medical "
+            f"provider or facility on this bill. The bill is a {damage_type} totaling "
+            f"about ${estimated_cost:,.0f}. Extract any ratings, patient complaints about "
+            f"overbilling, duplicate charges, surprise out-of-network or balance billing, "
+            f"and the provider's NPI if available."
         )
         tasks.append(
             asyncio.create_task(self.browse_and_verify(instruction=bbb_instruction))
         )
 
-        # ── Browse 2: News / Court Records ────────────────────────────────
+        # ── Browse 2: Fair-price benchmark for the billed services ────────
         court_instruction = (
-            f"Search public court records and local news for any insurance fraud cases, "
-            f"lawsuits, or criminal charges involving '{claimant_name}'. "
-            f"Check county court websites and local news outlets."
+            f"Look up the fair / typical price for the services on this {damage_type} "
+            f"(about ${estimated_cost:,.0f}). Use public price benchmarks such as Medicare "
+            f"allowed amounts, FAIR Health, and Healthcare Bluebook for the relevant CPT/HCPCS "
+            f"codes, and report whether the billed amount is far above the fair market price."
         )
         tasks.append(
             asyncio.create_task(self.browse_and_verify(instruction=court_instruction))
@@ -496,7 +513,7 @@ class YutoriService:
         raw_results = await asyncio.gather(*tasks, return_exceptions=True)
 
         browsing_results: list[dict[str, Any]] = []
-        entity_types = ["browse_bbb", "browse_court_records"]
+        entity_types = ["browse_provider_reviews", "browse_billing_complaints"]
 
         for idx, r in enumerate(raw_results):
             entity_type = entity_types[idx] if idx < len(entity_types) else "browse_unknown"

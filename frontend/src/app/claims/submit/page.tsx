@@ -128,14 +128,14 @@ export default function SubmitClaimPage() {
           />
         </div>
 
-        {/* Policy number */}
+        {/* Insurance member / policy ID */}
         <div className="flex flex-col gap-2">
           <label
             htmlFor="policyNumber"
             className="type-caption font-semibold"
             style={{ color: "var(--text-secondary)", letterSpacing: "0.04em" }}
           >
-            Policy number
+            Insurance member / policy ID
             <span
               aria-hidden="true"
               style={{ color: "var(--risk-critical)", marginLeft: 4 }}
@@ -148,7 +148,7 @@ export default function SubmitClaimPage() {
             type="text"
             value={policyNumber}
             onChange={(e) => setPolicyNumber(e.target.value)}
-            placeholder="e.g., POL-2024-001234"
+            placeholder="e.g., MBR-123456789"
             autoComplete="off"
             required
             className="w-full rounded-xl px-4 py-3 text-sm input-recessed focus:outline-none"

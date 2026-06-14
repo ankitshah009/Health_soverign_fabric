@@ -22,11 +22,11 @@ interface EntityConfig {
 }
 
 const ENTITY_CONFIGS: EntityConfig[] = [
-  { key: "claimant_history", label: "Patient History",         icon: Shield },
-  { key: "vehicle_property", label: "Provider / Facility",    icon: Building2 },
-  { key: "incident_corroboration", label: "Coverage Corroboration", icon: FileText },
-  { key: "repair_provider", label: "CPT / Code Verification",  icon: UserCheck },
-  { key: "financial_stress", label: "Network Status",          icon: Network },
+  { key: "patient_history", label: "Patient History",         icon: Shield },
+  { key: "provider_facility", label: "Provider / Facility",    icon: Building2 },
+  { key: "coverage_corroboration", label: "Coverage Corroboration", icon: FileText },
+  { key: "cpt_verification", label: "CPT / Code Verification",  icon: UserCheck },
+  { key: "network_status", label: "Network Status",          icon: Network },
 ];
 
 /* ------------------------------------------------------------------ */

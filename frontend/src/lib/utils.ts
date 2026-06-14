@@ -10,7 +10,7 @@ export function cn(...classes: (string | false | null | undefined)[]): string {
 }
 
 /**
- * Extract numeric fraud score from a claim's fraud_score field,
+ * Extract numeric error/overcharge score from a claim's fraud_score field,
  * which may be a plain number or a FraudScore object.
  */
 export function getNumericFraudScore(
@@ -22,7 +22,7 @@ export function getNumericFraudScore(
 }
 
 /**
- * Extract fraud signals from a FraudScore object.
+ * Extract error/overcharge signals from a FraudScore object.
  * Returns empty array if fraud_score is a plain number or null.
  */
 export function extractFraudSignals(
@@ -32,7 +32,7 @@ export function extractFraudSignals(
   return fs.signals ?? [];
 }
 
-/** Get risk color CSS variable for a fraud score */
+/** Get risk color CSS variable for an error/overcharge score */
 export function getRiskColor(score: number | null | undefined): string {
   if (score === null || score === undefined) return "var(--text-muted)";
   if (score >= 80) return "var(--risk-critical)";
@@ -41,7 +41,7 @@ export function getRiskColor(score: number | null | undefined): string {
   return "var(--risk-low)";
 }
 
-/** Get risk background color CSS variable for a fraud score */
+/** Get risk background color CSS variable for an error/overcharge score */
 export function getRiskBgColor(score: number | null | undefined): string {
   if (score === null || score === undefined) return "transparent";
   if (score >= 80) return "var(--risk-critical-bg)";
@@ -50,7 +50,7 @@ export function getRiskBgColor(score: number | null | undefined): string {
   return "var(--risk-low-bg)";
 }
 
-/** Get risk card class for a fraud score */
+/** Get risk card class for an error/overcharge score */
 export function getRiskCardClass(score: number | null | undefined): string {
   if (score === null || score === undefined) return "";
   if (score >= 80) return "card-risk-critical";

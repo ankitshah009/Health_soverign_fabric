@@ -287,7 +287,7 @@ export default function AllClaimsPage() {
                       <StatusBadge status={claim.status} size="sm" />
                     </div>
 
-                    {/* Fraud score */}
+                    {/* Error score */}
                     <div className="w-20 text-right">
                       <span
                         className="font-bold text-sm tabular-nums"

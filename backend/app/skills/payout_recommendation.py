@@ -1,4 +1,9 @@
-"""Payout Recommendation Skill — recommends claim payout via Grok."""
+"""Recovery Estimate Skill — estimates how much money the PATIENT can recover via Grok.
+
+The "recommended_amount" here is the dollar amount the patient can realistically
+recover or have removed from their bill (identified overcharges + any wrongly-denied
+amount that should have been covered) — NOT an insurer payout.
+"""
 
 from __future__ import annotations
 
@@ -24,7 +29,7 @@ SKILL_METADATA = {
 
 
 class PayoutRecommendationSkill:
-    """Calls Grok to recommend a payout amount for the claim."""
+    """Calls Grok to estimate the patient's recoverable amount (overcharges + wrongful denials)."""
 
     async def execute(
         self,
@@ -36,7 +41,7 @@ class PayoutRecommendationSkill:
             extracted_data, coverage, fraud_score,
         )
         logger.info(
-            "Payout recommendation: $%.2f (confidence: %.2f)",
+            "Estimated recoverable amount for patient: $%.2f (confidence: %.2f)",
             recommendation.recommended_amount,
             recommendation.confidence,
         )

@@ -1,4 +1,10 @@
-"""Payout Execution Skill — processes approved payouts (mock for demo)."""
+"""Recovery Execution Skill — records the patient-authorized filing of an appeal/dispute (mock for demo).
+
+The "amount" is the patient's estimated RECOVERABLE total (overcharges to be removed +
+wrongly-denied amount to be restored), not an insurer payout. "Execution" here means
+recording the patient's consent and filing the appeal/dispute on their behalf — no real
+money moves in this demo.
+"""
 
 from __future__ import annotations
 
@@ -19,12 +25,14 @@ SKILL_METADATA = {
     "identity_impact": False,
     "external_communication": True,
     "reversible": False,
-    "required_approval_role": "adjuster",
+    # Patient-side: the patient authorizes filing on their own behalf (consent).
+    # There is no insurer-side claims role in this product.
+    "required_approval_role": "patient",
 }
 
 
 class PayoutExecutionSkill:
-    """Executes a payout after Aubric authorization. Mock — no real money moves."""
+    """Files the appeal/dispute after the patient's consent. Mock — no real money moves."""
 
     async def execute(
         self,
@@ -55,7 +63,10 @@ class PayoutExecutionSkill:
             identity_confidence=0.95,
             fraud_score=0.0,  # Will be overwritten by caller if available
             policy_check="passed",
-            simulation_summary=f"Payout of ${amount:,.2f} approved by {approved_by}.",
+            simulation_summary=(
+                f"Appeal/dispute filed for an estimated ${amount:,.2f} in recoverable "
+                f"charges, authorized by {approved_by}."
+            ),
             timestamp=now,
             signature_hash=sig_result["signature"],
             signature=sig_result["signature"],
@@ -83,12 +94,12 @@ class PayoutExecutionSkill:
                 "receipt_id": receipt_id,
                 "amount": amount,
                 "signature_hash": sig_result["signature"],
-                "note": "Mock payout — no real money transferred.",
+                "note": "Mock filing — appeal/dispute recorded; no real money transferred.",
             },
         )
 
         logger.info(
-            "Payout executed: %s | %s | $%.2f | receipt=%s",
+            "Recovery filing executed: %s | %s | $%.2f recoverable | receipt=%s",
             claim_id, approved_by, amount, receipt_id,
         )
 

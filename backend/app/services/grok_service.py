@@ -1,4 +1,9 @@
-"""Grok (xAI) API service — document analysis, fraud assessment, payout, simulation."""
+"""Grok (xAI) API service for patient medical-billing advocacy.
+
+Wraps the xAI calls behind the pipeline: medical-document analysis (itemized bill /
+EOB / denial), overcharge & billing-error detection, the patient's recoverable-amount
+estimate, appeal/dispute outcome simulation, and appeal/No-Surprises-Act complaint drafting.
+"""
 
 from __future__ import annotations
 

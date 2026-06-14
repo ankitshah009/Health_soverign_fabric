@@ -1,4 +1,4 @@
-"""Claim Intake Skill — saves uploaded file and creates the initial claim record."""
+"""Case Intake Skill — saves the uploaded medical bill/EOB/denial and creates the initial case record."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ def _detect_file_type(filename: str) -> str:
 
 
 class ClaimIntakeSkill:
-    """Handles initial claim submission: file save + DB record creation."""
+    """Handles initial case submission: medical-document save + DB record creation."""
 
     async def execute(
         self,

@@ -1,4 +1,11 @@
-"""Fraud Signal Skill — combines Grok fraud assessment with Yutori verification."""
+"""Billing-Signal Skill — combines Grok overcharge/error assessment with Yutori web evidence.
+
+Repurposed for patient-side medical-billing advocacy: the "score" is OVERCHARGE /
+BILLING-ERROR SEVERITY (how badly the patient was overbilled or wrongly denied),
+not a fraud score against the patient. Yutori web findings (fair-price benchmarks,
+provider/NPI lookups, CPT-code meaning, facility network status) push that severity
+UP when they corroborate an overcharge and DOWN when the bill checks out as fair.
+"""
 
 from __future__ import annotations
 
@@ -23,29 +30,31 @@ def _adjust_score_with_yutori(
     base_score: FraudScore,
     yutori_results: list[dict[str, Any]],
 ) -> FraudScore:
-    """Adjust the fraud score based on Yutori web verification findings.
+    """Adjust the overcharge-severity score based on Yutori web evidence.
 
-    Uses entity_type-specific adjustments calibrated for SIU research vectors:
-      - claimant_history  +15  (prior fraud is the strongest signal)
-      - vehicle_property  +12  (salvage / stolen is very suspicious)
-      - repair_provider   +10  (fraud ring connection is serious)
-      - incident_corroboration +8  (contradictions are meaningful)
-      - financial_stress  +8   (motive indicator)
-    High credibility (>0.7) → -3, low credibility (<0.3) → +8, unverified → +2.
+    The entity_type keys are kept stable (the frontend maps them to patient-facing
+    labels), but each now corroborates a BILLING problem for the patient:
+      - patient_history  +15  (patient/member history — prior wrongful billing pattern)
+      - provider_facility  +12  (provider / facility — known overbilling complaints)
+      - cpt_verification   +10  (CPT / code verification — the code doesn't match the care)
+      - coverage_corroboration +8  (coverage corroboration — service was in fact covered)
+      - network_status  +8   (network status — provider was actually in-network → NSA applies)
+    A web finding that corroborates an overcharge raises severity; a clean check
+    lowers it. High credibility (>0.7) → -3, low credibility (<0.3) → +8, unverified → +2.
     """
     adjustment = 0.0
     extra_signals = []
 
-    # Per-vector risk adjustments when risk_indicators are found
+    # Per-vector severity bumps when the web evidence corroborates a billing problem
     _risk_adjustment: dict[str, float] = {
-        "claimant_history": 15.0,
-        "vehicle_property": 12.0,
-        "repair_provider": 10.0,
-        "incident_corroboration": 8.0,
-        "financial_stress": 8.0,
+        "patient_history": 15.0,
+        "provider_facility": 12.0,
+        "cpt_verification": 10.0,
+        "coverage_corroboration": 8.0,
+        "network_status": 8.0,
         # Browsing API deep-investigation vectors (second pass)
-        "browse_bbb": 12.0,
-        "browse_court_records": 15.0,
+        "browse_provider_reviews": 12.0,
+        "browse_billing_complaints": 15.0,
     }
     _default_risk_adjustment = 10.0
 
@@ -61,7 +70,7 @@ def _adjust_score_with_yutori(
             credibility = results_data.get("credibility_score")
 
             if risk_indicators:
-                # Yutori found risk indicators — boost fraud score by vector weight
+                # Yutori corroborated a billing problem — raise overcharge severity by vector weight
                 bump = _risk_adjustment.get(entity_type, _default_risk_adjustment)
                 adjustment += bump
                 severity = "high" if bump >= 12 else "medium"
@@ -149,7 +158,7 @@ def _adjust_score_with_yutori(
 
 
 class FraudSignalSkill:
-    """Combines Grok-based fraud assessment with Yutori web verification."""
+    """Combines Grok-based overcharge/billing-error assessment with Yutori web evidence."""
 
     async def execute(
         self,
@@ -157,18 +166,18 @@ class FraudSignalSkill:
         incident_description: str,
         yutori_results: list[dict[str, Any]],
     ) -> FraudScore:
-        # Step 1: Get base fraud assessment from Grok
+        # Step 1: Get base overcharge/billing-error assessment from Grok
         base_score = await grok_service.assess_fraud(extracted_data, incident_description)
         logger.info(
-            "Base fraud score: %.1f (%s)",
+            "Base overcharge-severity score: %.1f (%s)",
             base_score.overall_score,
             base_score.risk_level,
         )
 
-        # Step 2: Adjust based on Yutori verification
+        # Step 2: Adjust based on Yutori web evidence (fair-price / provider / code checks)
         adjusted = _adjust_score_with_yutori(base_score, yutori_results)
         logger.info(
-            "Adjusted fraud score: %.1f (%s) [%+.1f from Yutori]",
+            "Adjusted overcharge-severity score: %.1f (%s) [%+.1f from Yutori]",
             adjusted.overall_score,
             adjusted.risk_level,
             adjusted.overall_score - base_score.overall_score,

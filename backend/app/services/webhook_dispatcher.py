@@ -1,8 +1,11 @@
 """
-Lightweight webhook dispatcher for Aubric ClaimGuard.
+Lightweight webhook dispatcher for Aubric Sovereign.
 
-Fires asynchronous HTTP POST events to registered endpoints when claims
-are submitted, completed, or risk thresholds are crossed.
+Fires asynchronous HTTP POST events to registered endpoints when billing cases
+are submitted, completed, or overcharge-severity thresholds are crossed.
+
+(The ``X-ClaimGuard-*`` HTTP header names are kept as a stable wire contract so
+existing webhook consumers' signature verification keeps working.)
 
 Design principles:
 - All deliveries are non-blocking: fired via asyncio.create_task()
@@ -376,7 +379,7 @@ async def send_test_event(endpoint: WebhookEndpoint) -> dict:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "data": {
             "test": True,
-            "message": "This is a test event from Aubric ClaimGuard.",
+            "message": "This is a test event from Aubric Sovereign.",
             "webhook_id": endpoint.webhook_id,
         },
     }

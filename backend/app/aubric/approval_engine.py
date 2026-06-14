@@ -20,32 +20,36 @@ class ApprovalEngine:
         approver: str,
         risk_assessment: dict[str, Any],
     ) -> dict[str, Any]:
-        """Process an approval/denial decision, validating against risk constraints.
+        """Process the patient's consent/decline decision, validating against the consent gate.
 
         Args:
-            claim_id: The claim being decided on.
-            decision: One of 'approve', 'deny', 'escalate'.
-            approver: Name/ID of the person making the decision.
+            claim_id: The case being decided on.
+            decision: One of 'approve' (the patient consents to file), 'deny'
+                (the patient declines), 'escalate' (route for manual review).
+            approver: Name/ID of the patient giving or declining consent.
             risk_assessment: Output from RiskEngine.evaluate().
 
         Returns:
             Dict with approved (bool), reason, and details.
         """
-        recommended_action = risk_assessment.get("recommended_action", "require_human")
+        recommended_action = risk_assessment.get("recommended_action", "require_consent")
+        # NOTE: fraud_score here is OVERCHARGE-SEVERITY (how strong the patient's case
+        # is), not a score against the patient.
         fraud_score = risk_assessment.get("fraud_score", 0)
 
-        # ── Rule 1: If risk says "block", nobody can approve ─────────────
+        # ── Rule 1: If a step is hard-gated for manual review, it can't auto-file ──
+        # (Defensive: the patient-side risk engine normally only returns
+        # 'require_consent' / 'auto_approve', so this branch is a safety net.)
         if recommended_action == "block" and decision == "approve":
             reason = (
-                f"BLOCKED: Fraud score ({fraud_score:.0f}/100) exceeds critical threshold. "
-                "Claim cannot be approved without SIU investigation clearance. "
-                "Decision overridden to 'deny'."
+                "HOLD: This case is flagged for manual review before Sovereign can file "
+                "on the patient's behalf. Filing is paused pending that review."
             )
             await add_audit_entry(
                 claim_id, "approval_blocked", approver,
                 {"attempted_decision": decision, "reason": reason},
             )
-            logger.warning("Approval blocked for %s by risk engine", claim_id)
+            logger.warning("Filing paused for %s pending manual review", claim_id)
             return {
                 "approved": False,
                 "decision": "deny",
@@ -53,20 +57,21 @@ class ApprovalEngine:
                 "override_applied": True,
             }
 
-        # ── Rule 2: If risk says "escalate_fraud", only SIU can approve ──
+        # ── Rule 2: If the case needs a specialist's sign-off, gate on that role ──
+        # (Defensive safety net; not emitted by the patient-side risk engine.)
         if recommended_action == "escalate_fraud" and decision == "approve":
-            if approver.lower() not in ("siu_investigator", "siu", "fraud_unit"):
+            if approver.lower() not in ("billing_advocate", "case_reviewer", "supervisor"):
                 reason = (
-                    f"ESCALATED: Fraud score ({fraud_score:.0f}/100) requires SIU review. "
-                    f"Approver '{approver}' does not have SIU authority. "
-                    "Only 'siu_investigator' role can approve escalated claims."
+                    "ESCALATED: This case needs a billing advocate / case reviewer to "
+                    f"sign off before filing. '{approver}' is not authorized to approve "
+                    "an escalated case. Route it to a 'billing_advocate' reviewer."
                 )
                 await add_audit_entry(
                     claim_id, "approval_escalation_required", approver,
                     {"attempted_decision": decision, "reason": reason},
                 )
                 logger.warning(
-                    "Approval denied for %s: SIU required, got %s",
+                    "Filing held for %s: reviewer sign-off required, got %s",
                     claim_id, approver,
                 )
                 return {

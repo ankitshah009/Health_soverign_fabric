@@ -1,4 +1,11 @@
-"""Coverage Lookup Skill — mock policy database for demo purposes."""
+"""Coverage Lookup Skill — mock MEDICAL insurance plan lookup for demo purposes.
+
+Given a patient's plan id and the kind of care on the bill, returns what their
+plan actually covers and what the patient *should* truly owe (deductible +
+coinsurance, capped at the out-of-pocket max). The point for the patient: the
+care is almost always covered, so a denial of it is usually appealable, and
+anything billed above their true cost-share is disputable.
+"""
 
 from __future__ import annotations
 
@@ -10,246 +17,145 @@ logger = logging.getLogger(__name__)
 
 SKILL_METADATA = {
     "skill_name": "coverage_lookup_skill",
-    "action_category": "claims_processing",
+    "action_category": "bill_review",
     "read_or_write": "read",
     "money_movement": False,
     "reversible": True,
 }
 
-# ── Mock Policy Database ──────────────────────────────────────────────────────
+# Service categories a typical major-medical plan covers. A real itemized bill,
+# EOB, or denial letter is almost always for one of these.
+_COVERED_SERVICES = [
+    "emergency", "emergency room", "er visit", "er", "hospital", "hospitalization",
+    "inpatient", "outpatient", "surgery", "surgical", "anesthesia", "imaging",
+    "radiology", "ct", "mri", "x-ray", "xray", "laboratory", "lab", "diagnostic",
+    "office visit", "specialist", "primary care", "urgent care", "ambulance",
+    "physical therapy", "maternity", "prescription", "itemized_bill", "eob",
+    "denial_letter", "medical", "bill", "statement",
+]
 
-MOCK_POLICIES: dict[str, dict] = {
-    "AUTO-12345": {
-        "policy_number": "AUTO-12345",
-        "coverage_type": "comprehensive_auto",
-        "coverage_limit": 50000.00,
-        "deductible": 500.00,
-        "covered_damages": [
-            "vehicle collision", "bumper damage", "parking lot damage",
-            "theft", "vandalism", "weather damage", "fire damage",
-            "animal collision", "front bumper", "rear bumper",
-            "fender bender", "collision", "dent", "scratch",
-        ],
-        "holder_name": "John Smith - Comprehensive Auto",
+# Clear plan exclusions (the rare "not covered" case).
+_EXCLUSIONS = ("cosmetic", "elective cosmetic", "experimental", "investigational")
+
+# ── Mock medical plan database (keyed by member / policy id) ─────────────────
+
+MOCK_PLANS: dict[str, dict] = {
+    "BCBS-PPO-2026": {
+        "policy_number": "BCBS-PPO-2026",
+        "coverage_type": "PPO (in-network)",
+        "coverage_limit": 9450.00,   # individual out-of-pocket maximum
+        "deductible": 1500.00,
+        "coinsurance": 0.20,
+        "holder_name": "Blue Cross PPO",
     },
-    "HOME-67890": {
-        "policy_number": "HOME-67890",
-        "coverage_type": "homeowners",
-        "coverage_limit": 350000.00,
-        "deductible": 1000.00,
-        "covered_damages": [
-            "fire damage", "water damage", "theft", "vandalism",
-            "weather damage", "structural damage", "roof damage",
-            "flooding", "pipe burst",
-        ],
-        "holder_name": "Jane Doe - Premium Homeowners",
+    "AETNA-HDHP-2026": {
+        "policy_number": "AETNA-HDHP-2026",
+        "coverage_type": "HDHP + HSA (in-network)",
+        "coverage_limit": 7050.00,
+        "deductible": 3000.00,
+        "coinsurance": 0.10,
+        "holder_name": "Aetna HDHP",
     },
-    "POL-001": {
-        "policy_number": "POL-001",
-        "coverage_type": "comprehensive_auto",
-        "coverage_limit": 50000.00,
-        "deductible": 500.00,
-        "covered_damages": [
-            "vehicle collision", "theft", "vandalism", "weather damage",
-            "fire damage", "animal collision",
-        ],
-        "holder_name": "Standard Auto Policy",
-    },
-    "POL-002": {
-        "policy_number": "POL-002",
-        "coverage_type": "homeowners",
-        "coverage_limit": 250000.00,
-        "deductible": 1000.00,
-        "covered_damages": [
-            "fire damage", "water damage", "theft", "vandalism",
-            "weather damage", "structural damage",
-        ],
-        "holder_name": "Premium Homeowners Policy",
-    },
-    "POL-003": {
-        "policy_number": "POL-003",
-        "coverage_type": "liability_auto",
-        "coverage_limit": 25000.00,
-        "deductible": 250.00,
-        "covered_damages": [
-            "vehicle collision", "property damage", "bodily injury",
-        ],
-        "holder_name": "Basic Liability Auto",
-    },
-    "POL-004": {
-        "policy_number": "POL-004",
-        "coverage_type": "commercial_property",
-        "coverage_limit": 500000.00,
-        "deductible": 2500.00,
-        "covered_damages": [
-            "fire damage", "water damage", "theft", "vandalism",
-            "structural damage", "equipment damage", "business interruption",
-        ],
-        "holder_name": "Commercial Property Premier",
-    },
-    "POL-005": {
-        "policy_number": "POL-005",
-        "coverage_type": "health",
-        "coverage_limit": 100000.00,
-        "deductible": 750.00,
-        "covered_damages": [
-            "medical injury", "hospitalization", "surgery",
-            "emergency care", "rehabilitation",
-        ],
-        "holder_name": "Health Plus Policy",
-    },
-    "POL-006": {
-        "policy_number": "POL-006",
-        "coverage_type": "renters",
-        "coverage_limit": 30000.00,
-        "deductible": 500.00,
-        "covered_damages": [
-            "theft", "fire damage", "water damage", "vandalism",
-            "personal property loss",
-        ],
-        "holder_name": "Renters Essential Policy",
-    },
-    # ── Demo claim policies ──────────────────────────────────────────
-    "POL-2024-447231": {
-        "policy_number": "POL-2024-447231",
-        "coverage_type": "comprehensive_auto",
-        "coverage_limit": 50000.00,
-        "deductible": 500.00,
-        "covered_damages": [
-            "vehicle collision", "bumper damage", "front-end damage",
-            "fender damage", "theft", "vandalism", "weather damage",
-            "fire damage", "animal collision", "collision", "hit and run",
-        ],
-        "holder_name": "Sarah Chen",
-    },
-    "POL-2024-47721": {
-        "policy_number": "POL-2024-47721",
-        "coverage_type": "comprehensive_auto",
-        "coverage_limit": 50000.00,
-        "deductible": 500.00,
-        "covered_damages": [
-            "vehicle collision", "bumper damage", "front-end damage",
-            "fender damage", "theft", "vandalism", "weather damage",
-            "fire damage", "animal collision", "collision", "hit and run",
-        ],
-        "holder_name": "Sarah Chen",
-    },
-    "POL-2024-881093": {
-        "policy_number": "POL-2024-881093",
-        "coverage_type": "standard_auto",
-        "coverage_limit": 35000.00,
-        "deductible": 750.00,
-        "covered_damages": [
-            "vehicle collision", "door damage", "mirror damage",
-            "quarter panel damage", "hit and run", "parking damage",
-            "vandalism", "theft", "collision",
-        ],
-        "holder_name": "Marcus Rivera",
-    },
-    "POL-2025-102847": {
-        "policy_number": "POL-2025-102847",
-        "coverage_type": "premium_auto",
-        "coverage_limit": 75000.00,
-        "deductible": 1000.00,
-        "covered_damages": [
-            "vehicle collision", "hood damage", "door damage",
-            "roof damage", "quarter panel damage", "hit and run",
-            "theft", "vandalism", "weather damage", "collision",
-        ],
-        "holder_name": "Derek Thompson",
+    "UHC-EPO-2026": {
+        "policy_number": "UHC-EPO-2026",
+        "coverage_type": "EPO (in-network)",
+        "coverage_limit": 8700.00,
+        "deductible": 2000.00,
+        "coinsurance": 0.20,
+        "holder_name": "UnitedHealthcare EPO",
     },
 }
 
-# Default fallback policy for unknown policy numbers
-_DEFAULT_POLICY = {
-    "policy_number": "UNKNOWN",
-    "coverage_type": "general",
-    "coverage_limit": 25000.00,
-    "deductible": 500.00,
-    "covered_damages": [
-        "vehicle collision", "fire damage", "water damage", "theft",
-    ],
-    "holder_name": "Default Coverage",
+# Default plan for any unknown member id — a typical ACA major-medical plan.
+_DEFAULT_PLAN = {
+    "policy_number": "MEMBER",
+    "coverage_type": "PPO (in-network)",
+    "coverage_limit": 9100.00,   # ACA individual out-of-pocket max (ballpark)
+    "deductible": 1600.00,
+    "coinsurance": 0.20,
+    "holder_name": "Major Medical Plan",
 }
 
 
 def _normalize_policy_number(policy_number: str) -> str:
-    """Normalize policy IDs so demo-friendly variants still match."""
+    """Normalize member ids so demo-friendly variants still match."""
     return "".join(ch for ch in policy_number.upper() if ch.isalnum())
 
 
-_NORMALIZED_POLICY_KEYS = {
-    _normalize_policy_number(policy_key): policy_key
-    for policy_key in MOCK_POLICIES
+_NORMALIZED_PLAN_KEYS = {
+    _normalize_policy_number(plan_key): plan_key for plan_key in MOCK_PLANS
 }
 
 
-def _is_damage_covered(policy: dict, damage_type: str) -> bool:
-    """Check if a damage type is covered by fuzzy matching against policy."""
-    damage_lower = damage_type.lower()
-    for covered in policy["covered_damages"]:
-        if covered in damage_lower or damage_lower in covered:
+def _is_service_covered(service: str) -> bool:
+    """A medical bill/EOB/denial is for covered care unless clearly excluded."""
+    s = (service or "").lower()
+    if any(x in s for x in _EXCLUSIONS):
+        return False
+    if not s.strip():
+        return True
+    for covered in _COVERED_SERVICES:
+        if covered in s or s in covered:
             return True
-        # Partial word matching
-        covered_words = set(covered.split())
-        damage_words = set(damage_lower.split())
-        if covered_words & damage_words:
+        if set(covered.split()) & set(s.split()):
             return True
-    return False
+    # Default: a real medical bill is for covered care.
+    return True
 
 
 class CoverageLookupSkill:
-    """Looks up policy coverage for a claim."""
+    """Looks up the patient's medical plan coverage for a bill."""
 
     async def execute(
         self,
         policy_number: str,
-        damage_type: str,
+        damage_type: str,         # now: the service category / document type on the bill
         estimated_cost: float,
     ) -> CoverageResult:
         policy_number = (policy_number or "").strip().upper()
-        normalized_policy_number = _normalize_policy_number(policy_number)
-        canonical_key = _NORMALIZED_POLICY_KEYS.get(normalized_policy_number, policy_number)
-        fallback_policy = {
-            **_DEFAULT_POLICY,
-            "policy_number": policy_number or _DEFAULT_POLICY["policy_number"],
-        }
-        policy = MOCK_POLICIES.get(canonical_key, fallback_policy)
+        normalized = _normalize_policy_number(policy_number)
+        canonical_key = _NORMALIZED_PLAN_KEYS.get(normalized, policy_number)
+        fallback = {**_DEFAULT_PLAN, "policy_number": policy_number or _DEFAULT_PLAN["policy_number"]}
+        plan = MOCK_PLANS.get(canonical_key, fallback)
 
-        is_covered = _is_damage_covered(policy, damage_type)
+        service = damage_type or "medical care"
+        is_covered = _is_service_covered(service)
+        deductible = plan["deductible"]
+        coinsurance = plan.get("coinsurance", 0.20)
+        oop_max = plan["coverage_limit"]
 
-        if not is_covered:
+        if is_covered:
+            # Patient's true responsibility = deductible + coinsurance on the
+            # remainder, capped at the out-of-pocket maximum.
+            if estimated_cost > 0:
+                after_deductible = max(0.0, estimated_cost - deductible)
+                patient_owes = min(oop_max, deductible + after_deductible * coinsurance)
+            else:
+                patient_owes = 0.0
             explanation = (
-                f"The damage type '{damage_type}' is not covered under "
-                f"policy {policy['policy_number']} ({policy['coverage_type']}). "
-                f"Covered damage types: {', '.join(policy['covered_damages'])}."
-            )
-        elif estimated_cost > policy["coverage_limit"]:
-            explanation = (
-                f"Damage type '{damage_type}' is covered. However, the estimated cost "
-                f"(${estimated_cost:,.2f}) exceeds the coverage limit "
-                f"(${policy['coverage_limit']:,.2f}). Maximum payout after deductible: "
-                f"${policy['coverage_limit'] - policy['deductible']:,.2f}."
+                f"Plan {plan['policy_number']} ({plan['coverage_type']}): this care IS covered. "
+                f"Deductible ${deductible:,.0f}, {int(coinsurance * 100)}% coinsurance, "
+                f"out-of-pocket max ${oop_max:,.0f}. On a ${estimated_cost:,.0f} bill the patient's "
+                f"true responsibility is about ${patient_owes:,.0f} — anything billed above that is "
+                f"disputable, and a denial of covered care is appealable."
             )
         else:
-            net_payout = max(0, estimated_cost - policy["deductible"])
             explanation = (
-                f"Damage type '{damage_type}' is fully covered under "
-                f"policy {policy['policy_number']} ({policy['coverage_type']}). "
-                f"Estimated cost: ${estimated_cost:,.2f}. "
-                f"After deductible (${policy['deductible']:,.2f}): ${net_payout:,.2f} eligible."
+                f"Plan {plan['policy_number']} ({plan['coverage_type']}): this service may fall under "
+                f"a plan exclusion (e.g., cosmetic or experimental). Request the plan's written "
+                f"coverage determination and the specific exclusion cited before paying anything."
             )
 
         logger.info(
-            "Coverage lookup: %s | %s | covered=%s",
-            policy_number, damage_type, is_covered,
+            "Coverage lookup: %s | service=%s | covered=%s",
+            policy_number, service, is_covered,
         )
 
         return CoverageResult(
-            policy_number=policy["policy_number"],
-            coverage_type=policy["coverage_type"],
-            coverage_limit=policy["coverage_limit"],
-            deductible=policy["deductible"],
+            policy_number=plan["policy_number"],
+            coverage_type=plan["coverage_type"],
+            coverage_limit=oop_max,
+            deductible=deductible,
             covered=is_covered,
             explanation=explanation,
         )

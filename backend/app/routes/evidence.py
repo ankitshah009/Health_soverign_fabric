@@ -16,8 +16,9 @@ router = APIRouter(prefix="/api/claims", tags=["evidence"])
 
 @router.get("/{claim_id}/evidence")
 async def get_claim_evidence(claim_id: str) -> dict[str, Any]:
-    """Return all evidence for a claim: extracted data, fraud signals,
-    Yutori results, coverage, payout recommendation, simulation, and risk assessment."""
+    """Return all findings for a case: extracted bill/EOB/denial data, detected
+    overcharges & billing errors, web-research results, the patient's plan coverage,
+    the estimated recoverable amount, appeal-outcome simulation, and risk assessment."""
     claim = await get_claim(claim_id)
     if claim is None:
         raise HTTPException(status_code=404, detail=f"Claim {claim_id} not found.")
@@ -43,8 +44,10 @@ async def get_claim_evidence(claim_id: str) -> dict[str, Any]:
             "document_authenticity_confidence"
         )
 
-    # Short-circuited claims (fraud > 70) won't have payout or simulation data.
-    # Mark them explicitly so the frontend can show an appropriate message.
+    # Legacy short-circuit guard: cases without recovery/simulation data (kept for
+    # back-compat with any older records). The patient-side pipeline does NOT
+    # short-circuit on a high overcharge-severity score — that is the patient's
+    # strongest case — so this is effectively never set for new cases.
     short_circuited = (
         claim.get("status") == "blocked"
         and payout_recommendation is None

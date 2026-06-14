@@ -1,4 +1,17 @@
-"""Pydantic models for insurance claims data."""
+"""Pydantic models for patient medical-billing cases.
+
+Field NAMES are intentionally kept stable (the frontend and pipeline persist/read
+them by name), but their MEANING is patient-side medical billing. Notably:
+  - ExtractedData.damage_type      → document category (itemized_bill / EOB / denial_letter)
+  - ExtractedData.estimated_cost   → total amount billed on the document
+  - ExtractedData.vehicle_info     → (unused; kept for schema compatibility)
+  - FraudScore.overall_score       → OVERCHARGE / billing-error SEVERITY (0=clean, 100=severe)
+  - CoverageResult.coverage_limit  → the plan's out-of-pocket maximum
+  - PayoutRecommendation.recommended_amount → dollars the PATIENT can recover
+  - SimulationResult.approval_probability   → probability the patient's APPEAL succeeds
+  - SimulationResult.fraud_escalation_likelihood → likelihood external escalation (regulator/NSA) is needed
+  - claimant_name                  → the PATIENT's name
+"""
 
 from __future__ import annotations
 
@@ -23,71 +36,72 @@ class Severity(str, Enum):
     HIGH = "high"
 
 
-# ── Extracted Data (from Grok vision) ────────────────────────────────────────
+# ── Extracted Data (from Grok vision over the medical bill / EOB / denial) ────
 
 class ExtractedData(BaseModel):
-    damage_type: str = ""
-    estimated_cost: float = 0.0
-    vehicle_info: str = ""
-    incident_details: str = ""
-    document_type: str = ""
-    key_findings: list[str] = Field(default_factory=list)
+    damage_type: str = ""          # document category: itemized_bill / EOB / denial_letter
+    estimated_cost: float = 0.0    # total amount billed on the document
+    vehicle_info: str = ""         # unused; kept for schema/back-compat
+    incident_details: str = ""     # plain-English summary of the document
+    document_type: str = ""        # same document category as damage_type
+    key_findings: list[str] = Field(default_factory=list)  # notable line items / codes / charges
 
 
-# ── Fraud ─────────────────────────────────────────────────────────────────────
+# ── Overcharge / Billing-Error Signal (field names kept for compatibility) ────
 
 class FraudSignal(BaseModel):
-    signal_name: str
-    description: str
+    signal_name: str               # e.g. duplicate_charge / upcoding / balance_billing
+    description: str               # cites the line/code + estimated overcharge $ + fair-price benchmark
     severity: Severity = Severity.LOW
     confidence: float = Field(ge=0.0, le=1.0, default=0.5)
 
 
 class FraudScore(BaseModel):
+    # overall_score is the OVERCHARGE / billing-error severity (0=clean, 100=severe overcharge)
     overall_score: float = Field(ge=0.0, le=100.0, default=0.0)
     risk_level: RiskLevel = RiskLevel.LOW
     signals: list[FraudSignal] = Field(default_factory=list)
-    explanation: str = ""
+    explanation: str = ""          # patient-facing ("you appear to have been overcharged...")
 
 
-# ── Coverage ──────────────────────────────────────────────────────────────────
+# ── Coverage (the patient's medical plan) ─────────────────────────────────────
 
 class CoverageResult(BaseModel):
-    policy_number: str = ""
-    coverage_type: str = ""
-    coverage_limit: float = 0.0
+    policy_number: str = ""        # the patient's member/policy id
+    coverage_type: str = ""        # e.g. PPO / HDHP / EPO (in-network)
+    coverage_limit: float = 0.0    # the plan's out-of-pocket maximum
     deductible: float = 0.0
     covered: bool = False
     explanation: str = ""
 
 
-# ── Payout ────────────────────────────────────────────────────────────────────
+# ── Recovery Estimate (field names kept for compatibility) ────────────────────
 
 class PayoutRecommendation(BaseModel):
-    recommended_amount: float = 0.0
+    recommended_amount: float = 0.0  # dollars the PATIENT can recover (overcharges + wrongful denial)
     confidence: float = Field(ge=0.0, le=1.0, default=0.5)
     rationale: str = ""
-    comparable_claims: list[str] = Field(default_factory=list)
+    comparable_claims: list[str] = Field(default_factory=list)  # comparable patient dispute outcomes
 
 
-# ── Simulation ────────────────────────────────────────────────────────────────
+# ── Simulation (appeal / billing-dispute outcome) ─────────────────────────────
 
 class SimulationResult(BaseModel):
-    approval_probability: float = 0.0
-    dispute_risk: float = 0.0
-    fraud_escalation_likelihood: float = 0.0
-    financial_exposure: float = 0.0
+    approval_probability: float = 0.0          # probability the patient's appeal/dispute succeeds
+    dispute_risk: float = 0.0                  # risk the insurer/provider resists the correction
+    fraud_escalation_likelihood: float = 0.0   # likelihood external escalation (regulator/NSA) is needed
+    financial_exposure: float = 0.0            # dollars at stake for the patient
     historical_comparison: str = ""
-    recommended_action: str = ""
+    recommended_action: str = ""               # file_appeal / negotiate_bill / request_itemization / file_nsa_complaint / pay_corrected_amount
 
 
-# ── Claim Submission (what the frontend sends) ───────────────────────────────
+# ── Case Submission (what the frontend sends) ────────────────────────────────
 # Note: actual multipart parsing happens in the route; this is for docs.
 
 class ClaimSubmission(BaseModel):
-    claimant_name: str
-    incident_description: str
-    policy_number: str = ""
+    claimant_name: str             # the patient's name
+    incident_description: str      # what the bill / denial is about
+    policy_number: str = ""        # the patient's insurance member/policy id
 
 
 # ── Full Claim Record ────────────────────────────────────────────────────────

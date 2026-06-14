@@ -151,7 +151,11 @@ async def security_headers(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    # Explicit production alias for this project + the local dev origins.
+    allow_origins=ALLOWED_ORIGINS + ["https://frontend-green-rho-58.vercel.app"],
+    # Preview deploys are scoped to THIS Vercel project/org only — never the
+    # whole public *.vercel.app namespace (any user's deployment) with credentials.
+    allow_origin_regex=r"https://frontend-[a-z0-9-]+-ankit-shahs-projects-523d1fc7\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
@@ -327,7 +331,7 @@ async def get_verification_key():
     """Return the current public verification key.
 
     Third parties can use this key to independently verify any receipt
-    signed by this ClaimGuard instance.
+    signed by this Sovereign instance.
     """
     signer = get_signer()
     if not signer.available:

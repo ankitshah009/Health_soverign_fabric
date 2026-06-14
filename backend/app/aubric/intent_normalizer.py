@@ -1,4 +1,10 @@
-"""Aubric Intent Normalizer — converts raw skill actions into typed action objects."""
+"""Aubric Intent Normalizer — converts raw skill actions into typed action objects.
+
+Patient-side framing: the skill metadata categories are kept as stable identifiers,
+but they describe patient-advocacy steps — 'claims_processing' is case/bill intake,
+'fraud_detection' is overcharge/billing-error detection, and 'claims_payout' is the
+patient's recovery filing (consent to file an appeal/dispute on their behalf).
+"""
 
 from __future__ import annotations
 
@@ -30,7 +36,9 @@ class IntentNormalizer:
         money_movement = skill_meta.get("money_movement", False)
         reversible = skill_meta.get("reversible", True)
 
-        # Map action category to type
+        # Map action category to the internal action_type token (kept stable; logged only).
+        # Patient-side meaning: process the bill/case, detect overcharges, or file the
+        # recovery (appeal/dispute) on the patient's behalf vs. just estimate the recovery.
         action_type_map = {
             "claims_processing": "process_claim",
             "fraud_detection": "assess_fraud",
@@ -38,7 +46,8 @@ class IntentNormalizer:
         }
         action_type = action_type_map.get(action_category, "unknown_action")
 
-        # Determine severity based on monetary value and action nature
+        # Determine severity. For patient-side steps, "monetary_value" is the amount the
+        # patient could recover, and 'fraud_detection' is overcharge detection.
         if money_movement and monetary_value > 10000:
             severity = "high"
         elif money_movement and monetary_value > 1000:

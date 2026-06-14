@@ -1,11 +1,14 @@
-"""Claims API routes — submit, list, get, and SSE event stream.
+"""Billing-case API routes — submit, list, get, and SSE event stream.
 
-Pipeline Architecture (optimized):
-    Vision (3-8s) → [Coverage + Yutori] (parallel, 0-20s) → Fraud (2-5s)
-    → short-circuit if fraud > 70
-    → Payout (2-5s) → Risk (<10ms)
-    → Simulation (async, off critical path)
+Pipeline Architecture (optimized), all patient-side:
+    Vision over the bill/EOB/denial (3-8s) → [Coverage + Web research] (parallel, 0-20s)
+    → Overcharge/billing-error review (2-5s)
+    → Recoverable-amount estimate (2-5s) → Consent/risk gate (<10ms)
+    → Appeal-outcome simulation (async, off critical path)
     → Receipt (after simulation completes)
+
+A high overcharge-severity score is the PATIENT's strongest case, so the pipeline
+never short-circuits or blocks on it — it always runs the full recovery + appeal-odds path.
 """
 
 from __future__ import annotations
@@ -98,13 +101,16 @@ async def _emit(claim_id: str, event_type: str, message: str, status: str = "inf
 
 
 async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
-    """Full claim processing pipeline — runs as a background task.
+    """Full patient-side case processing pipeline — runs as a background task.
 
     Optimized pipeline flow:
-        Vision (3-8s) → [Coverage + Yutori] (parallel, 0-20s) → Fraud (2-5s)
-        → short-circuit if fraud > 70 (skip Payout/Sim)
-        → Payout (2-5s) → Risk (<10ms)
-        → Simulation (ASYNC, off critical path)
+        Vision over the bill/EOB/denial (3-8s) → [Coverage + Web research] (parallel, 0-20s)
+        → Overcharge/billing-error review (2-5s)
+        → Recoverable-amount estimate (2-5s) → Consent/risk gate (<10ms)
+        → Appeal-outcome simulation (ASYNC, off critical path)
+
+    A high overcharge-severity score is never a reason to skip steps — it is the
+    patient's strongest case and always runs the full recovery + appeal-odds path.
     """
     pipeline_start = time.monotonic()
     stage_timings: dict[str, float] = {}
@@ -131,7 +137,7 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
                     extracted_data = await grok_service.analyze_document(file_path, file_type)
                 else:
                     extracted_data = ExtractedData(
-                        damage_type="unknown",
+                        damage_type="unknown",  # document category (itemized_bill/EOB/denial_letter)
                         incident_details=incident_description,
                         document_type="none",
                         key_findings=["No document uploaded"],
@@ -146,7 +152,7 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
             await _emit(
                 claim_id, "document_analyzed",
                 f"Document analyzed: {extracted_data.damage_type} — "
-                f"estimated cost ${extracted_data.estimated_cost:,.2f} "
+                f"total billed ${extracted_data.estimated_cost:,.2f} "
                 f"({stage_timings['vision']:.1f}s)",
                 "completed",
                 {**extracted_data.model_dump(), "_stage_time": stage_timings["vision"]},
@@ -247,8 +253,8 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
                 yutori_results,
             )
 
-            # ── Step 4: Fraud signal assessment ──────────────────────────────
-            await _emit(claim_id, "fraud_assessment", "Running fraud signal analysis...", "processing")
+            # ── Step 4: Overcharge / billing-error assessment ────────────────
+            await _emit(claim_id, "fraud_assessment", "Scanning the bill for overcharges and billing errors...", "processing")
 
             t0 = time.monotonic()
             with trace_fraud_assessment(claim_id) as fraud_span:
@@ -269,23 +275,23 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
             )
             await _emit(
                 claim_id, "fraud_assessed",
-                f"Fraud assessment complete: score {fraud_score.overall_score:.0f}/100 "
-                f"({fraud_score.risk_level} risk) ({stage_timings['fraud']:.1f}s)",
+                f"Overcharge review complete: severity {fraud_score.overall_score:.0f}/100 "
+                f"({fraud_score.risk_level}) ({stage_timings['fraud']:.1f}s)",
                 "completed",
                 {**fraud_score.model_dump(), "_stage_time": stage_timings["fraud"]},
             )
 
-            # Fire webhook if fraud score crosses 50 or 70 thresholds
+            # Fire webhook if overcharge-severity score crosses 50 or 70 thresholds
             check_and_fire_threshold(claim_id, fraud_score.overall_score)
 
-            # ── SHORT-CIRCUIT: If fraud > 70, skip Payout + Simulation ───────
-            if False:  # Sovereign (patient-side): never short-circuit. A high overcharge score is the patient's STRONGEST case — it must run the full recovery + appeal-odds simulation below, not get marked "blocked".
-                logger.info("Short-circuiting pipeline for %s: fraud score %.0f > 70", claim_id, fraud_score.overall_score)
+            # ── SHORT-CIRCUIT (DISABLED for the patient side) ────────────────
+            if False:  # Sovereign (patient-side): never short-circuit. A high overcharge-severity score is the patient's STRONGEST case — it must run the full recovery + appeal-odds simulation below, not get marked "blocked".
+                logger.info("Short-circuit path is disabled for %s (overcharge severity %.0f)", claim_id, fraud_score.overall_score)
                 await _emit(
                     claim_id, "short_circuit",
-                    f"High fraud score ({fraud_score.overall_score:.0f}/100) — skipping payout and simulation.",
+                    f"High overcharge severity ({fraud_score.overall_score:.0f}/100) — (disabled path).",
                     "completed",
-                    {"reason": "fraud_threshold_exceeded", "fraud_score": fraud_score.overall_score},
+                    {"reason": "overcharge_severity_high", "fraud_score": fraud_score.overall_score},
                 )
 
                 # Run risk engine directly — it only needs fraud_score + monetary_value
@@ -296,7 +302,7 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
                         "read_or_write": "write",
                         "money_movement": True,
                         "reversible": False,
-                        "required_approval_role": "adjuster",
+                        "required_approval_role": "patient",
                     },
                     "claim_id": claim_id,
                     "monetary_value": 0.0,
@@ -315,7 +321,7 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
                 stage_timings["total"] = time.monotonic() - pipeline_start
                 await _emit(
                     claim_id, "pipeline_complete",
-                    f"Processing complete. Status: blocked. Fraud score exceeded threshold. ({stage_timings['total']:.1f}s total)",
+                    f"Processing complete (disabled path). ({stage_timings['total']:.1f}s total)",
                     "completed",
                     {"status": "blocked", "recommended_action": "block", "stage_timings": stage_timings},
                 )
@@ -330,8 +336,8 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
                 pipeline_span.set_attribute("pipeline.fraud_score", fraud_score.overall_score)
                 return  # Skip payout, simulation, and receipt
 
-            # ── Step 5: Payout recommendation ────────────────────────────────
-            await _emit(claim_id, "payout_analysis", "Computing payout recommendation...", "processing")
+            # ── Step 5: Recoverable-amount estimate ──────────────────────────
+            await _emit(claim_id, "payout_analysis", "Estimating how much the patient can recover...", "processing")
 
             t0 = time.monotonic()
             payout_rec: PayoutRecommendation = await payout_recommendation_skill.execute(
@@ -342,7 +348,7 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
             await update_claim(claim_id, payout_recommendation=payout_rec.model_dump())
             await _emit(
                 claim_id, "payout_recommended",
-                f"Recommended payout: ${payout_rec.recommended_amount:,.2f} "
+                f"Estimated recoverable for the patient: ${payout_rec.recommended_amount:,.2f} "
                 f"(confidence: {payout_rec.confidence:.0%}) ({stage_timings['payout']:.1f}s)",
                 "completed",
                 {**payout_rec.model_dump(), "_stage_time": stage_timings["payout"]},
@@ -359,7 +365,7 @@ async def _run_pipeline(claim_id: str, claim_record: dict[str, Any]) -> None:
                         "read_or_write": "write",
                         "money_movement": True,
                         "reversible": False,
-                        "required_approval_role": "adjuster",
+                        "required_approval_role": "patient",
                     },
                     "claim_id": claim_id,
                     "monetary_value": payout_rec.recommended_amount,
@@ -475,7 +481,7 @@ async def submit_claim(
     incident_description: str = Form(...),
     policy_number: str = Form(""),
 ) -> ClaimResponse:
-    """Submit a new insurance claim. Starts the processing pipeline in background."""
+    """Submit a new medical bill / EOB / denial for review. Starts the processing pipeline in background."""
     # Backpressure: reject if already at max concurrent pipelines
     if len(_running_tasks) >= MAX_CONCURRENT_PIPELINES:
         raise HTTPException(

@@ -1,5 +1,8 @@
 """
-OpenTelemetry distributed tracing for the Aubric ClaimGuard pipeline.
+OpenTelemetry distributed tracing for the Aubric Sovereign pipeline.
+
+(The OTLP service name, tracer name, and span-name prefix below intentionally keep
+the historical ``claimguard`` token so existing dashboards/queries keep working.)
 
 Provides:
   - OTEL SDK initialization with OTLP gRPC exporter
@@ -163,7 +166,8 @@ def init_telemetry(app: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Custom span helpers for the ClaimGuard processing pipeline
+# Custom span helpers for the Sovereign processing pipeline
+# (span names keep the ``claimguard.*`` prefix as a stable telemetry namespace)
 # ---------------------------------------------------------------------------
 
 @contextmanager

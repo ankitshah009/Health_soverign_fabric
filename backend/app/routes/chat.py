@@ -43,8 +43,9 @@ SYSTEM_PROMPT = (
     "denial is appealable — and, only with the patient's explicit consent, file the "
     "appeal/dispute on their behalf. Speak warmly, plainly, like a fierce advocate "
     "in the patient's corner. Name concrete numbers ('you were overcharged about "
-    "$1,800', 'this denial looks appealable'). Never sound like an insurance "
-    "adjuster. For demo, use realistic case IDs like CASE-10293."
+    "$1,800', 'this denial looks appealable'). Never sound like an insurance company, "
+    "a billing department, or a collections agent. For demo, use realistic case IDs "
+    "like CASE-10293."
 )
 
 # ── Tool definitions (OpenAI function calling format) ────────────────────────
@@ -55,28 +56,29 @@ CHAT_TOOLS: list[dict[str, Any]] = [
         "function": {
             "name": "submit_claim",
             "description": (
-                "Submit a new insurance claim for processing. This creates a claim "
-                "record and starts the automated investigation pipeline including "
-                "document analysis, fraud detection, and payout recommendation."
+                "Start a review of the patient's medical bill or insurance denial. This "
+                "creates a case record and starts the automated pipeline: document "
+                "analysis (itemized bill / EOB / denial), overcharge & billing-error "
+                "detection, and the patient's recoverable-amount estimate."
             ),
             "parameters": {
                 "type": "object",
                 "properties": {
                     "file_path": {
                         "type": "string",
-                        "description": "Path to the claim document/image file on the server.",
+                        "description": "Path to the medical bill / EOB / denial document on the server.",
                     },
                     "claimant_name": {
                         "type": "string",
-                        "description": "Full name of the person filing the claim.",
+                        "description": "Full name of the patient.",
                     },
                     "incident_description": {
                         "type": "string",
-                        "description": "Detailed description of the incident.",
+                        "description": "What the medical bill or insurance denial is about.",
                     },
                     "policy_number": {
                         "type": "string",
-                        "description": "Insurance policy number (e.g., POL-2024-47721).",
+                        "description": "Insurance member/policy ID from the patient's insurance card (e.g., BCBS-PPO-2026).",
                     },
                 },
                 "required": ["claimant_name", "incident_description", "policy_number"],
@@ -88,8 +90,8 @@ CHAT_TOOLS: list[dict[str, Any]] = [
         "function": {
             "name": "check_claim_status",
             "description": (
-                "Check the current status and details of an existing insurance claim "
-                "by its claim ID."
+                "Check the current status and details of an existing billing case "
+                "by its case ID."
             ),
             "parameters": {
                 "type": "object",
@@ -107,7 +109,7 @@ CHAT_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "list_claims",
-            "description": "List all insurance claims in the system with their current statuses.",
+            "description": "List all of the patient's billing cases in the system with their current statuses.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -120,23 +122,25 @@ CHAT_TOOLS: list[dict[str, Any]] = [
         "function": {
             "name": "approve_claim",
             "description": (
-                "Approve an insurance claim for payout. Only adjusters can approve claims. "
-                "This triggers the Aubric approval engine and generates a decision receipt."
+                "Record the patient's explicit consent and authorize Sovereign to FILE "
+                "the appeal/dispute on their behalf. Call only after the patient has "
+                "clearly agreed to proceed. This triggers the Aubric consent engine and "
+                "generates a signed decision receipt."
             ),
             "parameters": {
                 "type": "object",
                 "properties": {
                     "claim_id": {
                         "type": "string",
-                        "description": "The claim ID to approve.",
+                        "description": "The case ID to file the appeal/dispute for.",
                     },
                     "approver_name": {
                         "type": "string",
-                        "description": "Name of the adjuster approving the claim.",
+                        "description": "The patient's name, recorded as giving consent.",
                     },
                     "notes": {
                         "type": "string",
-                        "description": "Optional notes or justification for the approval.",
+                        "description": "Optional notes about the patient's consent.",
                     },
                 },
                 "required": ["claim_id", "approver_name"],
@@ -148,23 +152,23 @@ CHAT_TOOLS: list[dict[str, Any]] = [
         "function": {
             "name": "deny_claim",
             "description": (
-                "Deny an insurance claim. Only adjusters can deny claims. "
-                "This triggers the Aubric approval engine and generates a decision receipt."
+                "Record that the patient DECLINES to proceed with filing the appeal/dispute. "
+                "This triggers the Aubric consent engine and generates a decision receipt."
             ),
             "parameters": {
                 "type": "object",
                 "properties": {
                     "claim_id": {
                         "type": "string",
-                        "description": "The claim ID to deny.",
+                        "description": "The case ID the patient is declining to proceed with.",
                     },
                     "approver_name": {
                         "type": "string",
-                        "description": "Name of the adjuster denying the claim.",
+                        "description": "The patient's name, recorded as declining.",
                     },
                     "notes": {
                         "type": "string",
-                        "description": "Optional notes or justification for the denial.",
+                        "description": "Optional notes about why the patient declined.",
                     },
                 },
                 "required": ["claim_id", "approver_name"],
@@ -176,16 +180,17 @@ CHAT_TOOLS: list[dict[str, Any]] = [
         "function": {
             "name": "get_evidence",
             "description": (
-                "Retrieve all evidence and analysis results for a claim, including "
-                "extracted document data, fraud assessment, coverage, payout recommendation, "
-                "simulation results, and risk assessment."
+                "Retrieve all findings for a case: the extracted bill/EOB/denial data, "
+                "detected overcharges and billing errors, the patient's plan coverage, "
+                "the estimated recoverable amount, appeal-outcome simulation, and the "
+                "consent/risk assessment."
             ),
             "parameters": {
                 "type": "object",
                 "properties": {
                     "claim_id": {
                         "type": "string",
-                        "description": "The claim ID to get evidence for.",
+                        "description": "The case ID to get findings for.",
                     },
                 },
                 "required": ["claim_id"],
@@ -349,7 +354,7 @@ async def _execute_approval_decision(
                 "read_or_write": "write",
                 "money_movement": True,
                 "reversible": False,
-                "required_approval_role": "adjuster",
+                "required_approval_role": "patient",
             },
             "claim_id": claim_id,
             "monetary_value": monetary_value,
@@ -587,12 +592,13 @@ async def chat_stream(request: ChatRequest) -> EventSourceResponse:
             claim = await get_claim(request.claim_id)
             if claim:
                 context = (
-                    f"[Context: Currently discussing claim {request.claim_id}. "
+                    f"[Context: Currently discussing billing case {request.claim_id}. "
                     f"Status: {claim.get('status')}. "
-                    f"Claimant: {claim.get('claimant_name')}. "
-                    f"Policy: {claim.get('policy_number')}. "
-                    f"Fraud score: {claim.get('fraud_score')}. "
-                    f"Risk level: {claim.get('risk_level')}.]"
+                    f"Patient: {claim.get('claimant_name')}. "
+                    f"Plan/member ID: {claim.get('policy_number')}. "
+                    f"Overcharge-severity score (0-100, higher = stronger case for the patient): "
+                    f"{claim.get('fraud_score')}. "
+                    f"Severity level: {claim.get('risk_level')}.]"
                 )
                 messages.append({"role": "system", "content": context})
 

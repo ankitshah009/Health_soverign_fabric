@@ -1,9 +1,9 @@
 """
-Ed25519 decision receipt signing service for Aubric ClaimGuard.
+Ed25519 decision receipt signing service for Aubric Sovereign.
 
 Signs decision receipts with Ed25519 to produce cryptographically verifiable
 attestations. Any third party can verify a receipt was genuinely issued by
-ClaimGuard and hasn't been tampered with.
+Sovereign and hasn't been tampered with.
 
 Architecture:
   Receipt (dict) -> canonical_serialize -> Ed25519 sign -> add signature fields

@@ -55,8 +55,8 @@ SYSTEM_PROMPT = (
     "How to talk: speak naturally and conversationally, like a knowledgeable friend, "
     "not a form. Name concrete numbers out loud, for example 'it looks like you were "
     "overcharged about $1,800 on this' or 'good news, this denial looks appealable.' "
-    "Reassure them this is fixable. NEVER sound like an insurance adjuster or a "
-    "collections agent, you are always on the patient's side. For the demo, use "
+    "Reassure them this is fixable. NEVER sound like an insurance company, a hospital "
+    "billing department, or a collections agent, you are always on the patient's side. For the demo, use "
     "realistic case IDs such as CASE-10293, CASE-10417, and CASE-10588.\n\n"
     "Language: serve every patient in their own language. Automatically detect the "
     "language the patient is speaking from their very first words (English and "
@@ -341,10 +341,10 @@ async def _voice_list_claims(args: dict[str, Any]) -> dict[str, Any]:
 
 
 async def _voice_approve_claim(args: dict[str, Any]) -> dict[str, Any]:
-    """Approve a claim."""
+    """Record the patient's consent and file the appeal/dispute on their behalf."""
     claim_id = args.get("claim_id", "")
-    approver_name = args.get("approver_name", "Voice Adjuster")
-    notes = args.get("notes", "Approved via voice agent")
+    approver_name = args.get("approver_name", "Patient (voice)")
+    notes = args.get("notes", "Consent to file given via voice agent")
 
     claim = await get_claim(claim_id)
     if claim is None:
@@ -371,7 +371,7 @@ async def _voice_approve_claim(args: dict[str, Any]) -> dict[str, Any]:
                 "read_or_write": "write",
                 "money_movement": True,
                 "reversible": False,
-                "required_approval_role": "adjuster",
+                "required_approval_role": "patient",
             },
             "claim_id": claim_id,
             "monetary_value": monetary_value,
@@ -442,10 +442,10 @@ async def _voice_approve_claim(args: dict[str, Any]) -> dict[str, Any]:
 
 
 async def _voice_deny_claim(args: dict[str, Any]) -> dict[str, Any]:
-    """Deny a claim."""
+    """Record that the patient declines to proceed with filing."""
     claim_id = args.get("claim_id", "")
-    approver_name = args.get("approver_name", "Voice Adjuster")
-    notes = args.get("notes", "Denied via voice agent")
+    approver_name = args.get("approver_name", "Patient (voice)")
+    notes = args.get("notes", "Patient declined to proceed via voice agent")
 
     claim = await get_claim(claim_id)
     if claim is None:
@@ -466,7 +466,7 @@ async def _voice_deny_claim(args: dict[str, Any]) -> dict[str, Any]:
                 "read_or_write": "write",
                 "money_movement": True,
                 "reversible": False,
-                "required_approval_role": "adjuster",
+                "required_approval_role": "patient",
             },
             "claim_id": claim_id,
             "monetary_value": 0.0,

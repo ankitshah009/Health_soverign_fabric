@@ -51,7 +51,7 @@ async def process_approval(request: ApprovalRequest) -> dict[str, Any]:
                 "read_or_write": "write",
                 "money_movement": True,
                 "reversible": False,
-                "required_approval_role": "adjuster",
+                "required_approval_role": "patient",
             },
             "claim_id": request.claim_id,
             "monetary_value": monetary_value,

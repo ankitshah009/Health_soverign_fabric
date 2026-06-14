@@ -29,7 +29,7 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-/** Extract error/overcharge signals from case — from fraud_signals field or FraudScore object. */
+/** Extract error/overcharge signals from case — from fraud_signals field or error score object. */
 function getFraudSignals(claim: ClaimData): FraudSignal[] {
   if (claim.fraud_signals && claim.fraud_signals.length > 0) {
     return claim.fraud_signals;
@@ -841,7 +841,7 @@ export default function ClaimDetailPage({
               <span>{formatClaimDate(claim.created_at, "long")}</span>
               {claim.policy_number && (
                 <span>
-                  Policy:{" "}
+                  Member ID:{" "}
                   <span style={{ color: "var(--text-primary)" }}>
                     {claim.policy_number}
                   </span>
