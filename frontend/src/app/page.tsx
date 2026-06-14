@@ -241,10 +241,11 @@ export default function DashboardPage() {
   }, [fetchClaims]);
 
   const handlePendingFile = useCallback(async (file: File) => {
-    // Only accept images
-    if (!file.type.startsWith("image/")) return;
+    // Accept images and PDFs (PDFs are rendered to an image server-side for vision)
+    const isImage = file.type.startsWith("image/");
+    if (!isImage && file.type !== "application/pdf") return;
     setPendingFile(file);
-    setPendingPreview(URL.createObjectURL(file));
+    setPendingPreview(isImage ? URL.createObjectURL(file) : null);
     setPendingUploading(true);
     try {
       await uploadPendingFile(file);
